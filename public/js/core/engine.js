@@ -238,9 +238,8 @@
     if (!this.canDrop()) return false;
     if (this.level && this.level.drops && this.stats.drops >= this.level.drops && !this.armed) return false;
     if (x != null) this.setAim(x);
-    var y = D.BOX.SPAWN_Y;
-    var p = this.localToWorld(this.aimX, y);
-    if (this.angle === 0) p = { x: this.aimX, y: y };
+    // 放下位置＝畫面上手持動物的位置（世界座標），箱子轉斜時也一致
+    var p = { x: this.aimX, y: D.BOX.SPAWN_Y };
     var body;
     if (this.armed) {
       body = this.makeBody(this.armed, 2, p.x, p.y);

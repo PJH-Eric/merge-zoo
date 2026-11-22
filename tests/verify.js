@@ -176,6 +176,13 @@ test('旋轉箱子：最多 ±45°，放開會回正', () => {
   k.setRotate(-1); steps(k, 120);
   assert.ok(Math.abs(k.angle + Math.PI / 9) < 1e-6);
 });
+test('箱子轉斜時放下位置與手持位置一致', () => {
+  const s = session({ mode: 'daily', rule: 'rotate' });
+  s.setRotate(1); steps(s, 60); s.setRotate(0);
+  s.setAim(60); const x = s.aimX; let ev = null; s.on(e => { if (e.type === 'drop') ev = e; });
+  s.drop();
+  assert.strictEqual(ev.x, x);
+});
 test('不能旋轉的模式忽略旋轉輸入', () => {
   const s = session(); s.setRotate(1); steps(s, 30);
   assert.strictEqual(s.angle, 0);
