@@ -1,0 +1,18 @@
+{
+  "name": "merge-zoo",
+  "version": "1.0.0",
+  "description": "合成動物園：單機物理合成遊戲。四個世界、五段難度、闖關 200 關、每日挑戰、動物圖鑑與成就（純前端、零執行期依賴）",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "test": "node tests/verify.js",
+    "gen:levels": "node scripts/gen-levels.js",
+    "gen:hans": "python3 scripts/gen-hans.py",
+    "inject:seo": "node scripts/inject-seo.js",
+    "check:ui": "python3 tests/ui-check.py"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
