@@ -23,6 +23,7 @@ npm start          # http://localhost:3110（Windows 也可以直接點「啟動
 
 ```bash
 npm test               # 規則核心測試（合成、計分、連鎖、紅線、道具、冰塊、任務、旋轉、存檔、每日挑戰、200 關資料與抽樣通關）
+npm run check:flow     # 完整流程巡檢：真的跑 3、2、1 倒數、暫停不偷跑、續玩、切換語言、闖關解鎖、每日紀錄、Esc 只關分享（需要 Python Playwright）
 npm run check:ui       # 實際瀏覽器巡檢：各畫面 × 手機／平板／桌機直橫向 × 繁中／英文截圖與破版檢查（需要 Python Playwright）
 npm run gen:levels     # 重新產生並校準 200 關（關卡產生器初稿 → 模擬玩家試玩 → 設定目標與星數 → 再驗證可通關）
 npm run gen:hans       # 從繁中字典轉出簡中字典（需要 pip install opencc-python-reimplemented）

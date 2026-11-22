@@ -10,7 +10,8 @@
     "gen:levels": "node scripts/gen-levels.js",
     "gen:hans": "python3 scripts/gen-hans.py",
     "inject:seo": "node scripts/inject-seo.js",
-    "check:ui": "python3 tests/ui-check.py"
+    "check:ui": "python3 tests/ui-check.py",
+    "check:flow": "python3 tests/flow-check.py"
   },
   "engines": {
     "node": ">=22"
