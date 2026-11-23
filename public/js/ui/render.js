@@ -345,14 +345,6 @@
         g.beginPath(); g.arc(0, 0, r * 1.12, 0, Math.PI * 2); g.fill();
         g.restore();
       }
-      if (s.dangerOn && s.dangerIds && s.dangerIds.indexOf(b.id) >= 0) {
-        // 超過紅線的那隻：紅色外框閃爍，一眼看出是誰
-        g.save();
-        g.strokeStyle = 'rgba(255,50,72,' + (0.55 + 0.45 * Math.sin(s.t * 16)) + ')';
-        g.lineWidth = 5;
-        g.beginPath(); g.arc(0, 0, r + 5, 0, Math.PI * 2); g.stroke();
-        g.restore();
-      }
       if (self.matchLevel && m.kind === 'animal' && !m.ice && m.level === self.matchLevel) {
         // 跟手上一樣的動物：放在牠旁邊碰到就會合成
         var pulse = 0.55 + 0.45 * Math.sin(s.t * 5 + m.id);
@@ -391,6 +383,17 @@
       }
       g.restore();
     });
+    // 超過紅線的動物：紅色外框閃爍（畫在動物上面，才不會被毛蓋住）
+    if (s.dangerOn && s.dangerIds && s.dangerIds.length) {
+      g.save();
+      g.strokeStyle = 'rgba(255,50,72,' + (0.6 + 0.4 * Math.sin(s.t * 16)) + ')';
+      g.lineWidth = 5; g.setLineDash([10, 6]);
+      s.animals().forEach(function (b) {
+        if (s.dangerIds.indexOf(b.id) < 0) return;
+        g.beginPath(); g.arc(b.position.x, b.position.y, b.circleRadius * 1.22 + 4, 0, Math.PI * 2); g.stroke();
+      });
+      g.restore();
+    }
   };
 
   Renderer.prototype.drawHeld = function (g, s) {
