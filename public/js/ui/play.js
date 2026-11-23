@@ -80,6 +80,10 @@
     hd.score = h('b', { class: 'hud-num' });
     hd.best = h('span', { class: 'hud-sub' });
     hd.next = h('div', { class: 'next-pic' });
+    hd.swap = h('button', { type: 'button', class: 'swap-btn', 'aria-keyshortcuts': 'S', 'data-i18n-attr': 'aria-label=hud.swapAria;title=hud.swapAria',
+      'aria-label': t('hud.swapAria'), title: t('hud.swapAria'), onclick: function () { self.doSwap(); } },
+      K.icon('refresh'), h('span', { class: 'swap-txt', 'data-i18n': 'hud.swap', text: t('hud.swap') }), h('kbd', { class: 'keycap', text: 'S' }));
+    hd.pokeHint = h('div', { class: 'poke-hint' });
     hd.goal = h('div', { class: 'hud-goal' });
     hd.limit = h('div', { class: 'hud-limit' });
     hd.energyFill = h('span', { class: 'energy-fill' });
@@ -106,8 +110,8 @@
       h('div', { class: 'hud-card hud-scorecard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.score', text: t('hud.score') }), hd.score, hd.best),
       h('div', { class: 'hud-card hud-timecard' }, hd.timeLabel, hd.time),
       h('div', { class: 'hud-card hud-goalcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.goal', text: t('hud.goal') }), hd.goal, hd.limit),
-      h('div', { class: 'hud-card hud-nextcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.next', text: t('hud.next') }), hd.next),
-      h('div', { class: 'hud-card hud-itemcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.items', text: t('hud.items') }), hd.energy, hd.items),
+      h('div', { class: 'hud-card hud-nextcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.next', text: t('hud.next') }), hd.next, hd.swap),
+      h('div', { class: 'hud-card hud-itemcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.items', text: t('hud.items') }), hd.energy, hd.items, hd.pokeHint),
       h('div', { class: 'hud-card hud-statcard' }, statBox),
       h('div', { class: 'hud-card hud-chaincard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.chain', text: t('hud.chain') }), hd.chain, hd.chainHint),
       hd.endBtn);
@@ -169,6 +173,13 @@
     st.addEventListener('pointerdown', function (e) {
       if (e.target.closest('.btn') || self.locked || self.paused) return;
       if (root.GameAudio) root.GameAudio.unlock();
+      // 點到箱子裡的動物＝戳一戳（不放下）
+      if (self.session.mode !== 'tutorial') {
+        var r0 = self.canvas.getBoundingClientRect();
+        var wp = self.renderer.toWorld(e.clientX - r0.left, e.clientY - r0.top);
+        var lp0 = self.session.worldToLocal(wp.x, wp.y);
+        if (lp0.y > 0 && self.session.animalAt(wp.x, wp.y)) { self.doPoke(wp.x, wp.y); return; }
+      }
       self.pointer = e.pointerId;
       try { st.setPointerCapture(e.pointerId); } catch (err) {}
       aim(e);
@@ -210,6 +221,7 @@
       else if ((k === 'q' || k === 'Q') && self.session.canRotate) self.session.setRotate(down ? -1 : 0);
       else if ((k === 'e' || k === 'E') && self.session.canRotate) self.session.setRotate(down ? 1 : 0);
       else if (down && (k === '1' || k === '2' || k === '3')) self.useItem(+k - 1);
+      else if (down && !e.repeat && (k === 's' || k === 'S' || k === 'ArrowUp')) { e.preventDefault(); self.doSwap(); }
     };
     root.addEventListener('keydown', this.onKey);
     root.addEventListener('keyup', this.onKey);
@@ -221,6 +233,17 @@
     if (s.drop()) {
       if (s.mode === 'tutorial' && this.tutStep <= 1) this.tutorialStep(2);
     }
+  };
+
+  Game.prototype.doSwap = function () {
+    if (this.locked || this.paused) return;
+    if (this.session.swap()) { SFX('swap'); this.updateHud(true); } else SFX('deny');
+  };
+  Game.prototype.doPoke = function (x, y) {
+    var res = this.session.poke(x, y);
+    if (res === 'ok') { SFX('poke'); this.updateHud(true); }
+    else if (res === 'energy') { SFX('deny'); K.toast(t('toast.noEnergy', { n: E.POKE_COST })); }
+    else if (res === 'none') { SFX('deny'); K.toast(t('toast.noPoke')); }
   };
 
   Game.prototype.useItem = function (i) {
@@ -294,6 +317,9 @@
           h('img', { src: Art.image(s.world.id, lv, 'normal').src, alt: '' })));
       }
     }
+    var pk = s.pokesLeft != null ? t('hud.pokeLeft', { n: s.pokesLeft }) : t('hud.pokeHint', { n: E.POKE_COST });
+    if (hd.pokeText !== pk) { hd.pokeText = pk; hd.pokeHint.textContent = pk; }
+    hd.swap.disabled = !!s.armed || s.state !== 'playing';
     var nx = s.queue[s.armed ? 0 : 1];
     var key = s.world.id + nx.level + (nx.gold ? 'g' : '');
     if (force || hd.nextKey !== key) {
@@ -330,7 +356,7 @@
         this.armTag.appendChild(h('span', { text: t('hud.armed', { item: t('item.' + s.armed) }) }));
         this.armTag.appendChild(K.button({ label: t('hud.cancel'), variant: 'mini', onClick: function () { s.cancelArm(); self.updateHud(true); } }));
       }
-      this.side.querySelector('.hud-itemcard').hidden = !s.useEnergy && s.items.length === 0 && !s.armed && !(s.level && s.level.items);
+      this.side.querySelector('.hud-itemcard').hidden = s.mode === 'tutorial';
     }
   };
 

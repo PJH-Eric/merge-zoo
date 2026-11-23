@@ -444,6 +444,7 @@
     }
   };
 
+  var EXTRA = {};   // 其他世界（animals-more.js 透過 register 加入）
   var ZOO = ['chick', 'mouse', 'rabbit', 'cat', 'dog', 'pig', 'sheep', 'panda', 'lion', 'elephant'];
 
   /* ---------- 甜點：寫實的動物臉＋甜點質感身體 ---------- */
@@ -525,7 +526,8 @@
 
   function build(world, level, expr) {
     var id = 'k' + (uid++), e = expr || 'normal', sp;
-    if (world === 'ocean') sp = OCEAN[level](e, id);
+    if (EXTRA[world]) sp = EXTRA[world][level](e, id);
+    else if (world === 'ocean') sp = OCEAN[level](e, id);
     else if (world === 'sweets') {
       sp = level === 9 ? SPECIES.lion(e, id, SWEET_COL[8], ['#F4A6C0', '#FFC8DA', '#FFE6EF'])
         : SPECIES[ZOO[level - 1]](e, id, SWEET_COL[level - 1]);
@@ -602,7 +604,9 @@
     return img;
   }
 
-  var api = { svg: svg, image: image, preload: preload, itemSvg: itemSvg, itemImage: itemImage, shade: shade };
+  var api = { svg: svg, image: image, preload: preload, itemSvg: itemSvg, itemImage: itemImage, shade: shade,
+    register: function (world, map) { EXTRA[world] = map; },
+    kit: { ball: ball, eye: eye, eyes: eyes, sweat: sweat, mouthY: mouthY, whiskers: whiskers, P: P, C: C, prng: prng, f1: f1 } };
   root.MZArt = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof self !== 'undefined' ? self : this);

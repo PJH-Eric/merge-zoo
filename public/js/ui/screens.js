@@ -38,7 +38,7 @@
   /* ---------- 怎麼玩 ---------- */
   S.howto = function () {
     var list = h('ol', { class: 'howto' });
-    for (var i = 1; i <= 6; i++) list.appendChild(h('li', { text: t('how.' + i) }));
+    for (var i = 1; i <= 7; i++) list.appendChild(h('li', { text: t('how.' + i) }));
     var items = h('div', { class: 'howto-items' }, D.ITEMS.map(function (it) {
       return h('div', { class: 'howto-item' }, h('img', { src: Art.itemImage(it).src, alt: '' }), h('b', { text: t('item.' + it) }), h('span', { text: t('item.' + it + '.desc') }));
     }));
@@ -167,7 +167,7 @@
   S.codex = function (host, app) {
     app.setTitle(t('codex.title'));
     var c = P.codex();
-    var wrap = h('div', { class: 'codex' }, h('p', { class: 'codex-progress', text: t('codex.progress', { n: c.length, m: 40 }) }));
+    var wrap = h('div', { class: 'codex' }, h('p', { class: 'codex-progress', text: t('codex.progress', { n: c.length, m: D.WORLDS.length * 10 }) }));
     WORLD_IDS.forEach(function (w) {
       var grid = h('div', { class: 'codex-grid' });
       for (var l = 1; l <= 10; l++) {

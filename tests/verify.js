@@ -183,6 +183,30 @@ test('箱子轉斜時放下位置與手持位置一致', () => {
   s.drop();
   assert.strictEqual(ev.x, x);
 });
+test('交換：手上的動物跟下一隻對調，準備道具時不能換', () => {
+  const s = session(); s.queue = [{ level: 1 }, { level: 4 }];
+  assert.ok(s.swap());
+  assert.deepStrictEqual(s.queue.map(q => q.level), [4, 1]);
+  s.items = ['bomb']; s.armItem(0);
+  assert.ok(!s.swap());
+});
+test('戳一戳：耗能量、往同伴推；能量不夠或闖關次數用完就不行', () => {
+  const s = session(); const r = D.RADII[3];
+  const a = s.makeBody('animal', 3, -100, s.H - r); const b = s.makeBody('animal', 3, 100, s.H - r);
+  a.mz.born = b.mz.born = -10; steps(s, 20);
+  assert.strictEqual(s.poke(a.position.x, a.position.y), 'energy');
+  s.energy = 25;
+  assert.strictEqual(s.poke(a.position.x, a.position.y), 'ok');
+  assert.ok(a.velocity.x > 0 && a.velocity.y < 0, '往右邊的同伴彈');
+  assert.strictEqual(s.energy, 15);
+  assert.strictEqual(s.poke(a.position.x, a.position.y), 'cooldown');
+  assert.strictEqual(s.poke(0, -200), 'miss');
+  const lv = session({ mode: 'level', level: { id: 't', world: 'zoo', index: 1, goal: { type: 'score', target: 1e9 } } });
+  const c = lv.makeBody('animal', 2, 0, lv.H - D.RADII[2]); c.mz.born = -10;
+  for (let i = 0; i < 3; i++) { steps(lv, 30); assert.strictEqual(lv.poke(c.position.x, c.position.y), 'ok'); }
+  steps(lv, 30);
+  assert.strictEqual(lv.poke(c.position.x, c.position.y), 'none');
+});
 test('不能旋轉的模式忽略旋轉輸入', () => {
   const s = session(); s.setRotate(1); steps(s, 30);
   assert.strictEqual(s.angle, 0);
@@ -227,22 +251,22 @@ test('各世界、各難度、各特殊箱子自動遊玩不出錯', () => {
     assert.ok(s.score > 0, shape);
   });
 });
-test('關卡資料：200 關齊全且每關都有目標與星數門檻', () => {
+test('關卡資料：每個世界 50 關齊全且每關都有目標與星數門檻', () => {
   let L;
   try { L = require('../public/js/core/level-data.js'); } catch (e) { L = []; }
-  assert.strictEqual(L.length, 200);
+  assert.strictEqual(L.length, D.WORLDS.length * 50);
   L.forEach(l => {
     assert.ok(l.goal && l.stars && l.stars.length === 2, l.id);
     if (l.goal.type === 'score') assert.ok(l.goal.target > 0, l.id);
     if (l.goal.type === 'make') assert.ok(l.goal.count >= 1 && l.goal.level >= 3, l.id);
   });
-  const ids = new Set(L.map(l => l.id)); assert.strictEqual(ids.size, 200);
+  const ids = new Set(L.map(l => l.id)); assert.strictEqual(ids.size, D.WORLDS.length * 50);
 });
 test('關卡抽樣重跑：模擬玩家可以通關', () => {
   let L;
   try { L = require('../public/js/core/level-data.js'); } catch (e) { L = []; }
   const rng = new R.Rng(2026);
-  const sample = [L[0], L[49], L[50], L[99], L[100], L[149], L[150], L[199]].concat([0, 1, 2, 3].map(() => L[rng.int(0, L.length - 1)])).filter(Boolean);
+  const sample = [L[0], L[49], L[50], L[99], L[100], L[149], L[150], L[199], L[200], L[249], L[250], L[299], L[300], L[349]].concat([0, 1, 2, 3].map(() => L[rng.int(0, L.length - 1)])).filter(Boolean);
   sample.forEach(def => {
     const ok = [101, 202, 303].some(seed => Bot.play(new E.Session({ mode: 'level', level: def, seed: def.seed }), { seed, maxT: 150 }).result === 'win');
     assert.ok(ok, def.id + ' 無法通關');

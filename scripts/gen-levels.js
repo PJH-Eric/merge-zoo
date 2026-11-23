@@ -18,7 +18,7 @@ function run(def, seed, maxT) {
 }
 
 function calibrate(draft) {
-  const p = (D.WORLDS.findIndex(w => w.id === draft.world) * 50 + draft.index) / 200;
+  const p = (D.WORLDS.findIndex(w => w.id === draft.world) * 50 + draft.index) / (D.WORLDS.length * 50);
   const factor = 0.5 + p * 0.3;
   const probe = JSON.parse(JSON.stringify(draft));
   const g = probe.goal;

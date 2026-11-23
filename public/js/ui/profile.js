@@ -129,7 +129,7 @@
   };
   P.checkCodex = function () {
     var c = P.codex();
-    if (c.length >= 40) P.unlock('codex_all');
+    if (c.length >= D.WORLDS.length * 10) P.unlock('codex_all');
     D.WORLDS.forEach(function (w) {
       var n = 0;
       for (var l = 1; l <= 10; l++) if (c.indexOf(w.id + '-' + l) >= 0) n++;
@@ -168,9 +168,9 @@
         if (cleared >= 10) P.unlock('levels10');
         if (cleared >= 50) P.unlock('levels50');
         if (cleared >= 100) P.unlock('levels100');
-        if (cleared >= 200) P.unlock('levels200');
+        if (cleared >= D.WORLDS.length * 50) P.unlock('levels200');
         if (stars >= 100) P.unlock('stars100');
-        if (stars >= 600) P.unlock('stars600');
+        if (stars >= D.WORLDS.length * 150) P.unlock('stars600');
       }
     }
     return out;

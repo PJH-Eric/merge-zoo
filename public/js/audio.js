@@ -12,7 +12,11 @@
     zoo: { wave: 'triangle', partial: 3.9, pGain: 0.35, decay: 0.28, glide: 0 },
     ocean: { wave: 'sine', partial: 2, pGain: 0.12, decay: 0.35, glide: 0.6 },
     sweets: { wave: 'sine', partial: 4, pGain: 0.45, decay: 0.7, glide: 0 },
-    space: { wave: 'square', partial: 1.005, pGain: 0.5, decay: 0.32, glide: -0.2, filter: 1800 }
+    space: { wave: 'square', partial: 1.005, pGain: 0.5, decay: 0.32, glide: -0.2, filter: 1800 },
+    polar: { wave: 'sine', partial: 5.2, pGain: 0.4, decay: 0.6, glide: 0 },
+    jungle: { wave: 'triangle', partial: 2.8, pGain: 0.3, decay: 0.22, glide: -0.1 },
+    dino: { wave: 'sawtooth', partial: 0.5, pGain: 0.5, decay: 0.4, glide: -0.3, filter: 900 },
+    farm: { wave: 'triangle', partial: 3, pGain: 0.35, decay: 0.3, glide: 0.1 }
   };
 
   function ensure() {
@@ -103,6 +107,9 @@
       case 'win': [72, 76, 79, 84].forEach(function (n, i) { tone(midi(n), now + i * 0.12, 0.4, { wave: 'triangle', partial: 2, pGain: 0.2, gain: 0.4 }); }); break;
       case 'lose': [72, 67, 64, 60].forEach(function (n, i) { tone(midi(n), now + i * 0.14, 0.35, { wave: 'triangle', gain: 0.3 }); }); break;
       case 'click': tone(midi(88), now, 0.05, { wave: 'sine', gain: 0.15 }); break;
+      case 'poke': tone(midi(72), now, 0.16, { wave: 'sine', glide: 0.5, gain: 0.3 }); break;
+      case 'swap': tone(midi(79), now, 0.08, { wave: 'triangle', gain: 0.2 }); tone(midi(84), now + 0.06, 0.1, { wave: 'triangle', gain: 0.2 }); break;
+      case 'deny': tone(midi(55), now, 0.15, { wave: 'square', gain: 0.08, filter: 900 }); break;
       case 'danger': tone(midi(70), now, 0.15, { wave: 'square', gain: 0.08, filter: 1200 }); break;
       case 'bubble': tone(midi(80), now, 0.2, { wave: 'sine', glide: 0.8, gain: 0.25 }); break;
       case 'achv': [84, 88, 91, 96].forEach(function (n, i) { tone(midi(n), now + i * 0.08, 0.3, { wave: 'sine', partial: 2, pGain: 0.15, gain: 0.3 }); }); break;
@@ -119,7 +126,11 @@
     zoo: { wave: 'triangle', partial: 3.9, pGain: 0.3, dur: 0.32, bass: 'triangle' },
     ocean: { wave: 'sine', partial: 2, pGain: 0.1, dur: 0.5, bass: 'sine', glide: 0.03 },
     sweets: { wave: 'sine', partial: 4, pGain: 0.5, dur: 0.9, bass: 'sine', octave: 12 },
-    space: { wave: 'square', partial: 1.006, pGain: 0.6, dur: 0.4, bass: 'sawtooth', filter: 1500 }
+    space: { wave: 'square', partial: 1.006, pGain: 0.6, dur: 0.4, bass: 'sawtooth', filter: 1500 },
+    polar: { wave: 'sine', partial: 5.2, pGain: 0.35, dur: 0.8, bass: 'sine', octave: 12 },
+    jungle: { wave: 'triangle', partial: 2.8, pGain: 0.3, dur: 0.22, bass: 'triangle' },
+    dino: { wave: 'sawtooth', partial: 0.5, pGain: 0.4, dur: 0.35, bass: 'sawtooth', filter: 1000, octave: -12 },
+    farm: { wave: 'triangle', partial: 3, pGain: 0.35, dur: 0.25, bass: 'triangle' }
   };
   var STEP_SEC = 60 / 108 / 2;
 

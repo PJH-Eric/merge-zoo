@@ -9,7 +9,7 @@
   function draft(wi, index) {
     var world = D.WORLDS[wi].id;
     var rng = new R.Rng('merge-zoo-level-' + world + '-' + index);
-    var p = (wi * 50 + index) / 200;                 // 整體進度 0..1
+    var p = (wi * 50 + index) / (D.WORLDS.length * 50);   // 整體進度 0..1
     var lp = index / 50;                              // 世界內進度
     var def = { id: world + '-' + index, world: world, index: index, seed: R.hashString('mz-' + world + '-' + index),
       boss: index % 10 === 0, lift: +(0.15 + p * 0.55).toFixed(2) };
@@ -58,7 +58,7 @@
       if (index === 26) def.rotate = true;
       if (index % 8 === 4) def.ice = [{ x: -0.5, level: 3 }, { x: 0.5, level: 4 }];
       if (index % 6 === 0) def.items = { rainbow: 1, shake: 1 };
-    } else {
+    } else if (world === 'space') {
       if (index === 1 || index % 2 === 1) {
         def.mechanics = index % 4 === 1 ? [{ type: 'platform', period: 5 + (index % 3) }] : [{ type: 'paddle', side: index % 3 === 0 ? -1 : 1, speed: 0.7 + lp * 0.5 }];
         if (index >= 30 && index % 6 === 5) def.mechanics.push({ type: 'paddle', side: -1, speed: 0.8 });
@@ -67,6 +67,16 @@
       if (index % 4 === 2) def.box = { shape: ['bowl', 'funnel', 'divider'][index % 3] };
       if (index % 5 === 2) def.rotate = true;
       if (index % 7 === 3) def.ice = [{ x: -0.4, level: 4 }, { x: 0.4, level: 3 }];
+      if (index % 6 === 0) def.items = { rainbow: 1, bomb: 1, shake: 1 };
+    } else {
+      // 冰原／叢林／恐龍：不加新機關，靠新的物理手感，混合前面學過的冰塊、特殊箱子、旋轉與機關（總複習）
+      var mix = (index + wi) % 6;
+      if (mix === 1) def.ice = [{ x: -0.6, level: rng.int(2, 5) }, { x: 0, level: rng.int(2, 5) }, { x: 0.6, level: rng.int(2, 5) }];
+      else if (mix === 2) def.box = { shape: ['bowl', 'funnel', 'divider'][index % 3] };
+      else if (mix === 3) def.rotate = true;
+      else if (mix === 4) def.mechanics = [{ type: index % 2 ? 'platform' : 'paddle', side: index % 3 === 0 ? -1 : 1, speed: 0.8 + lp * 0.4, period: 6 }];
+      if (index % 9 === 0 && !def.boss) { def.box = def.box || { shape: 'bowl' }; def.rotate = true; }
+      if (index % 5 === 0 && def.ice && !def.boss) { def.goal = { type: 'ice' }; def.drops = 0; }
       if (index % 6 === 0) def.items = { rainbow: 1, bomb: 1, shake: 1 };
     }
     return def;

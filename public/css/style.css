@@ -134,7 +134,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .setup { max-width: 860px; margin: 0 auto; padding-top: 6px; }
 .sec-title { font-size: 18px; margin: 18px 0 10px; font-weight: 900; }
 .choice-grid { display: grid; gap: 12px; }
-.worlds { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.worlds { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 .diffs { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 @media (max-width: 760px) { .worlds { grid-template-columns: repeat(2, minmax(0, 1fr)); } .diffs { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 420px) { .diffs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -151,6 +151,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .choice-pics img { width: 34px; margin: 0 -4px; } .choice-pics img:nth-child(2) { width: 46px; } .choice-pics img:nth-child(3) { width: 62px; }
 .world-choice.w-zoo { background-color: #FFEBC9; } .world-choice.w-ocean { background-color: #D8F1FC; }
 .world-choice.w-sweets { background-color: #FFE3EE; } .world-choice.w-space { background-color: #E6E1FF; }
+.world-choice.w-polar { background-color: #E8F5FD; } .world-choice.w-jungle { background-color: #E2F4D6; } .world-choice.w-dino { background-color: #FBE6CC; }
 .setup-go { display: flex; justify-content: center; margin: 22px 0 8px; }
 .big-go { min-width: 220px; min-height: 60px; font-size: 22px; border-radius: 20px; }
 .daily-card { display: flex; align-items: center; gap: 16px; margin-top: 14px; padding: 14px 16px; border: 2.5px solid var(--ink); border-radius: 20px; background: #EEE9FF; box-shadow: 0 4px 0 var(--ink); }
@@ -204,6 +205,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .codex-lv { position: absolute; top: 4px; left: 8px; font-size: 12px; font-weight: 800; color: var(--ink-2); }
 .codex-world.w-zoo .codex-card:not(.locked) { background: #FFF3DF; } .codex-world.w-ocean .codex-card:not(.locked) { background: #E3F5FD; }
 .codex-world.w-sweets .codex-card:not(.locked) { background: #FFEDF4; } .codex-world.w-space .codex-card:not(.locked) { background: #EEEBFF; }
+.codex-world.w-polar .codex-card:not(.locked) { background: #EEF8FE; } .codex-world.w-jungle .codex-card:not(.locked) { background: #EAF7E0; } .codex-world.w-dino .codex-card:not(.locked) { background: #FDEEDB; }
 .codex-detail { text-align: center; }
 .codex-detail img { width: min(220px, 60vw); }
 .codex-meta { font-weight: 800; color: var(--ink-2); }
@@ -259,6 +261,12 @@ img { -webkit-user-drag: none; user-select: none; }
 .item-slot.empty { background: #F1E6D4; border-style: dashed; box-shadow: none; cursor: default; }
 .item-slot:not(.empty):active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
 .end-btn { margin-top: auto; }
+.swap-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 40px; padding: 2px 8px; border: 2px solid var(--ink); border-radius: 12px; background: #E3F3FF; box-shadow: 0 2px 0 var(--ink); font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.swap-btn:active { transform: translateY(2px); box-shadow: none; }
+.swap-btn:disabled { opacity: .45; cursor: default; }
+.swap-btn .ico, .swap-btn .ico svg { width: 18px; height: 18px; }
+.keycap { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 4px; border: 1.5px solid var(--ink); border-bottom-width: 3px; border-radius: 6px; background: #fff; font: 800 11px/1 var(--font); }
+.poke-hint { font-size: 12px; font-weight: 700; color: var(--ink-2); line-height: 1.35; }
 .hud-time { font-size: clamp(20px, 2.2vw, 26px); font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .hud-time.warn { color: var(--danger); animation: blink .5s ease-in-out infinite alternate; }
 .hud-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 8px; margin: 0; }
@@ -347,6 +355,10 @@ img { -webkit-user-drag: none; user-select: none; }
   .hud-stat dd { font-size: 14px; }
   .hud-time { font-size: 20px; }
   .end-btn { grid-column: 1 / -1; min-height: 40px; }
+  .hud-nextcard { align-items: center; }
+  .swap-txt, .keycap { display: none; }
+  .swap-btn { min-height: 40px; min-width: 40px; padding: 2px 6px; }
+  .poke-hint { display: none; }
 }
 @media (orientation: portrait) and (max-width: 420px) {
   .hud-num { font-size: 22px; }
@@ -363,7 +375,10 @@ img { -webkit-user-drag: none; user-select: none; }
   .hud-scorecard, .hud-goalcard, .hud-itemcard, .hud-statcard, .hud-chaincard, .end-btn { grid-column: 1 / -1; }
   .hud-num { font-size: 20px; }
   .hud-time { font-size: 17px; }
-  .hud-nextcard { flex-direction: row; align-items: center; justify-content: space-between; }
+  .hud-nextcard { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .swap-txt, .keycap { display: none; }
+  .swap-btn { min-height: 40px; min-width: 40px; padding: 2px 6px; }
+  .poke-hint { display: none; }
   .next-pic img { width: 34px; height: 34px; }
   .item-slot { height: 42px; }
   .item-slot img { width: 32px; height: 32px; }

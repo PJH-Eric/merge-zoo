@@ -1,7 +1,8 @@
 // 產生 40 隻角色對照表（開發用）：node scripts/art-sheet.js > tmp/art.html
 const A = require('../public/js/art/animals.js');
+globalThis.MZArt = A; require('../public/js/art/animals-more.js');
 let h = '<html><body style="margin:0;background:#f4efe6;font-family:sans-serif">';
-for (const w of ['zoo', 'ocean', 'sweets', 'space']) {
+for (const w of ['zoo', 'ocean', 'sweets', 'space', 'polar', 'jungle', 'dino', 'farm']) {
   h += '<div style="display:flex;gap:4px;padding:4px;align-items:center"><b style="width:60px">' + w + '</b>';
   for (let l = 1; l <= 10; l++) h += '<div style="width:110px;text-align:center">' + A.svg(w, l, 'normal').replace('width="160" height="160"', 'width="110" height="110"') + '</div>';
   h += '</div>';

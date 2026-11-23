@@ -17,6 +17,9 @@
   var COMBO_WINDOW = 1.0;
   var ENERGY_FULL = 100;
   var GOLD_CHANCE = 0.03;
+  var POKE_COST = 10;          // 戳一戳：經典／每日用能量
+  var POKE_PER_LEVEL = 3;      // 戳一戳：闖關每關次數
+  var POKE_COOLDOWN = 0.35;
 
   function scoreFor(level) { return level * (level + 1) / 2 * 10; }
 
@@ -64,6 +67,9 @@
     this.stats = { drops: 0, merges: 0, maxCombo: 0, maxLevel: 0, itemsUsed: 0, thawed: 0, goldMerges: 0,
       double10: 0, made: {}, maxGoldLevel: 0 };
     this.lastDropT = -99;
+    this.pokeCd = 0;
+    this.pokesLeft = this.mode === 'level' ? POKE_PER_LEVEL : null;
+    this.stats.swaps = 0; this.stats.pokes = 0;
 
     if (lv.items) {
       for (var k in lv.items) for (var i = 0; i < lv.items[k]; i++) this.items.push(k);
@@ -199,7 +205,7 @@
     var r = kind === 'animal' ? D.RADII[level] : D.RADII[2];
     var wd = this.world;
     var body = Bodies.circle(x, y, r, {
-      restitution: wd.restitution, friction: wd.friction, frictionAir: wd.frictionAir,
+      restitution: wd.restitution, friction: wd.friction, frictionAir: wd.frictionAir, frictionStatic: wd.frictionStatic != null ? wd.frictionStatic : 0.5,
       density: wd.density * (kind === 'animal' ? 1 : 1.4), label: kind, slop: 0.04
     });
     body.mz = { id: this.nextId++, kind: kind, level: level, born: this.t, gold: !!(extra && extra.gold),
@@ -290,6 +296,56 @@
       Body.setAngularVelocity(b, (self.rng.next() - 0.5) * 0.3);
       void m;
     });
+  };
+  /** 交換：手上的動物跟下一隻對調 */
+  Session.prototype.swap = function () {
+    if (this.state !== 'playing' || this.armed || this.queue.length < 2) return false;
+    var a = this.queue[0];
+    this.queue[0] = this.queue[1];
+    this.queue[1] = a;
+    this.stats.swaps++;
+    this.setAim(this.aimX);
+    this.emit({ type: 'swap' });
+    return true;
+  };
+  /** 找出某一點上的動物 */
+  Session.prototype.animalAt = function (x, y) {
+    var hit = null;
+    this.animals().forEach(function (b) {
+      if (b.mz.kind !== 'animal') return;
+      if (Math.hypot(b.position.x - x, b.position.y - y) <= b.circleRadius + 4) hit = b;
+    });
+    return hit;
+  };
+  /** 戳一戳：點箱子裡的動物讓牠彈一下，往最近的同伴推。回傳 'ok'／'miss'／'cooldown'／'energy'／'none' */
+  Session.prototype.poke = function (x, y) {
+    if (this.state !== 'playing') return 'miss';
+    var b = this.animalAt(x, y);
+    if (!b) return 'miss';
+    if (this.pokeCd > 0) return 'cooldown';
+    if (this.useEnergy) {
+      if (this.energy < POKE_COST) return 'energy';
+      this.energy -= POKE_COST;
+    } else if (this.pokesLeft != null) {
+      if (this.pokesLeft <= 0) return 'none';
+      this.pokesLeft--;
+    }
+    var mate = null, best = 1e9, self = this;
+    this.animals().forEach(function (o) {
+      if (o === b || o.mz.kind !== 'animal' || o.mz.ice || o.mz.level !== b.mz.level) return;
+      var d = Math.hypot(o.position.x - b.position.x, o.position.y - b.position.y);
+      if (d < best) { best = d; mate = o; }
+    });
+    var k = Math.sqrt(this.world.gravity);
+    var vx = mate ? Math.max(-4, Math.min(4, (mate.position.x - b.position.x) / 40)) : (this.rng.next() - 0.5) * 2;
+    Body.setVelocity(b, { x: b.velocity.x + vx * k, y: -4.6 * k });
+    Body.setAngularVelocity(b, (this.rng.next() - 0.5) * 0.2);
+    b.mz.hit = this.t;
+    this.pokeCd = POKE_COOLDOWN;
+    this.stats.pokes++;
+    this.emit({ type: 'poke', x: b.position.x, y: b.position.y, r: b.circleRadius, toward: !!mate });
+    void self;
+    return 'ok';
   };
   Session.prototype.setRotate = function (dir) { this.rotateInput = this.canRotate ? Math.max(-1, Math.min(1, dir)) : 0; };
 
@@ -460,6 +516,7 @@
     if (this.state !== 'playing') return;
     this.t += DT;
     if (this.cooldown > 0) this.cooldown -= DT;
+    if (this.pokeCd > 0) this.pokeCd -= DT;
     // 旋轉箱子
     if (this.canRotate) {
       var target = this.angle + this.rotateInput * 1.1 * DT;
@@ -611,7 +668,7 @@
     return s;
   };
 
-  var api = { Session: Session, scoreFor: scoreFor, STEP: STEP, DT: DT, COOLDOWN: COOLDOWN, DANGER_LIMIT: DANGER_LIMIT };
+  var api = { Session: Session, scoreFor: scoreFor, POKE_COST: POKE_COST, POKE_PER_LEVEL: POKE_PER_LEVEL, STEP: STEP, DT: DT, COOLDOWN: COOLDOWN, DANGER_LIMIT: DANGER_LIMIT };
   root.MZEngine = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof self !== 'undefined' ? self : this);
