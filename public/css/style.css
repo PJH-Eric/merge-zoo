@@ -255,7 +255,10 @@ img { -webkit-user-drag: none; user-select: none; }
 .next-pic img { width: 64px; height: 64px; }
 .next-pic img.gold { filter: drop-shadow(0 0 6px #FFD23C); }
 .hud-energy { height: 16px; }
-.energy-track { display: block; height: 14px; border-radius: 10px; border: 2px solid var(--ink); background: #F1E6D4; overflow: hidden; }
+.hud-energy { display: flex; align-items: center; gap: 6px; }
+.hud-energy[hidden] { display: none; }
+.energy-num { flex: none; min-width: 4.2em; text-align: right; font-size: 11px; font-weight: 800; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.energy-track { flex: 1 1 auto; min-width: 0; display: block; height: 14px; border-radius: 10px; border: 2px solid var(--ink); background: #F1E6D4; overflow: hidden; }
 .energy-fill { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--sun), var(--coral)); transition: width .25s; }
 .items { display: grid; grid-template-columns: repeat(3, minmax(0, 64px)); gap: 6px; align-items: center; }
 .item-slot { min-width: 0; width: 100%; height: 56px; border: 2.5px solid var(--ink); border-radius: 14px; background: #FFF0C2; box-shadow: 0 3px 0 var(--ink); display: grid; place-items: center; padding: 3px; cursor: pointer; }

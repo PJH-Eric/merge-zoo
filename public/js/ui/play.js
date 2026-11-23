@@ -87,7 +87,8 @@
     hd.goal = h('div', { class: 'hud-goal' });
     hd.limit = h('div', { class: 'hud-limit' });
     hd.energyFill = h('span', { class: 'energy-fill' });
-    hd.energy = h('div', { class: 'hud-energy', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100' }, h('span', { class: 'energy-track' }, hd.energyFill));
+    hd.energyNum = h('span', { class: 'energy-num', 'aria-hidden': 'true' });
+    hd.energy = h('div', { class: 'hud-energy', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100' }, h('span', { class: 'energy-track' }, hd.energyFill), hd.energyNum);
     hd.items = h('div', { class: 'items' });
     hd.endBtn = K.button({ label: t('hud.end'), variant: 'ghost', class: 'end-btn', onClick: function () { self.session.endNow(); } });
     hd.endBtn.querySelector('.btn-label').setAttribute('data-i18n', 'hud.end');
@@ -342,6 +343,8 @@
     if (s.useEnergy) {
       var pct = Math.min(100, Math.round(s.energy));
       hd.energyFill.style.width = pct + '%';
+      var num = Math.floor(s.energy) + '/100';
+      if (hd.energyNum.textContent !== num) hd.energyNum.textContent = num;
       hd.energy.setAttribute('aria-valuenow', String(pct));
       hd.energy.setAttribute('aria-label', t('hud.energy') + ' ' + pct + '%');
     }
