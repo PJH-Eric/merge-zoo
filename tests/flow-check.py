@@ -41,8 +41,10 @@ with sync_playwright() as p:
         pg.mouse.move(cx - 100 + i * 40, cy); pg.mouse.down(); pg.mouse.up(); pg.wait_for_timeout(600)
     check(S("MZPlay.current().session.stats.drops") >= 5, '開始後可以連續放下（冷卻 0.5 秒）')
     # 暫停不偷跑
+    # 先暫停再取時間：點擊本身要 30～70ms，期間遊戲仍在跑，不能算進「偷跑」
+    pg.click('#btn-pause'); pg.wait_for_selector('.pause-actions')
     t0 = S("MZPlay.current().session.t")
-    pg.click('#btn-pause'); pg.wait_for_timeout(3200)
+    pg.wait_for_timeout(3200)
     check(abs(S("MZPlay.current().session.t") - t0) < 0.05, '暫停超過 3 秒時間沒有偷跑')
     pg.click('.pause-actions .btn-primary'); pg.wait_for_timeout(300)
     check(pg.is_visible('.countdown') and pg.inner_text('.count-num') == '3', '繼續後從 3 重新倒數')
