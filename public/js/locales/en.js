@@ -27,7 +27,7 @@ I18N.add('en', {
   'hud.score': 'Score', 'hud.best': 'Best', 'hud.next': 'Next', 'hud.energy': 'Energy', 'hud.items': 'Items',
   'hud.goal': 'Mission', 'hud.time': 'Time', 'hud.drops': 'Left', 'hud.end': 'End round',
   'hud.rotL': 'Tilt left', 'hud.rotR': 'Tilt right', 'hud.armed': 'Ready: {item}', 'hud.cancel': 'Cancel',
-  'hud.timeLeft': 'Time left', 'hud.chain': 'Merge chain', 'hud.stat.drops': 'Drops', 'hud.stat.merges': 'Merges', 'hud.stat.combo': 'Combo', 'hud.stat.maxCombo': 'Best combo',
+  'hud.timeLeft': 'Time left', 'hud.chain': 'Merge chain', 'hud.stat.drops': 'Drops', 'hud.stat.merges': 'Merges', 'hud.stat.combo': 'Combo', 'hud.stat.maxCombo': 'Top combo',
   'hud.mergeHint': 'Two {a} touch → ', 'hud.mergeTop': 'vanish for a big bonus!',
   'hud.emptySlot': 'Empty item slot', 'hud.combo': 'Combo ×{n}', 'hud.danger': 'Over the red line!',
   'hud.stage': 'Play area: hold and drag to aim, release to drop',

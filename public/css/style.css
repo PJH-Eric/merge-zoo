@@ -277,7 +277,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .hud-time.warn { color: var(--danger); animation: blink .5s ease-in-out infinite alternate; }
 .hud-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 8px; margin: 0; }
 .hud-stat { display: flex; flex-direction: column; min-width: 0; }
-.hud-stat dt { font-size: 11px; font-weight: 800; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-stat dt { font-size: 11px; font-weight: 800; color: var(--ink-2); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hud-stat dd { margin: 0; font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.15; }
 .hud-stat.hot dd { color: var(--coral); }
 .hud-chain { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
@@ -499,6 +499,8 @@ img { -webkit-user-drag: none; user-select: none; }
     .hud-goalcard, .end-btn, .hud-itemcard, .hud-chaincard { grid-column: 1 / -1; }
     .hud-nextcard { justify-content: space-between; }
     .hud-itemcard, .hud-chaincard, .end-btn { order: 2; }
+    .hud-stats { gap: 2px 6px; }
+    .hud-stat dt { font-size: 10px; letter-spacing: -0.01em; }
     .hud-chain { grid-template-columns: repeat(10, minmax(0, 1fr)); }
     .end-btn { margin-top: 0; }
   }

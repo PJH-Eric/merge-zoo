@@ -5,8 +5,8 @@ from playwright.sync_api import sync_playwright
 
 URL = 'http://localhost:3110/?skipcountdown'
 fails = []
-def check(name, ok):
-    print(('✓ ' if ok else '✗ ') + name)
+def check(name, ok, info=None):
+    print(("✓ " if ok else "✗ ") + name + ("" if ok or info is None else "  " + str(info)))
     if not ok: fails.append(name)
 
 def setup(pg):
@@ -14,7 +14,9 @@ def setup(pg):
     pg.goto(URL); pg.wait_for_timeout(300)
     pg.evaluate("MZApp.go('play',{mode:'classic',world:'zoo',difficulty:'normal'})"); pg.wait_for_timeout(600)
     pg.evaluate("""(()=>{const g=MZPlay.current(),s=g.session;for(let i=0;i<500;i++){if(s.canDrop())s.drop(((i*37)%400)-200);s.step();}
-      for(let i=0;i<240;i++)s.step(); s.energy=60; g.updateHud(true)})()""")
+      for(let i=0;i<240;i++)s.step(); s.energy=60; g.updateHud(true);
+      // 記錄真的戳到幾次（戳完可能剛好合成又加能量，不能只看能量）
+      window.__pokes=0; const orig=s.poke.bind(s); s.poke=(x,y)=>{const r=orig(x,y); if(r==='ok') window.__pokes++; return r;};})()""")
 
 def animal_screen(pg, edge=0):
     # 最大的一隻動物在螢幕上的位置；edge=0.85 表示點在牠的邊緣
@@ -23,7 +25,7 @@ def animal_screen(pg, edge=0):
       return [c.left+r.ox+(b.position.x+b.circleRadius*edge)*r.scale, c.top+r.oy+b.position.y*r.scale]}""", edge)
 
 def state(pg):
-    return pg.evaluate("(()=>{const s=MZPlay.current().session;return {drops:s.stats.drops,energy:Math.round(s.energy),t:s.t,poke:!!MZPlay.current().pokeMode}})()")
+    return pg.evaluate("(()=>{const s=MZPlay.current().session;return {drops:s.stats.drops,energy:Math.round(s.energy),t:s.t,pokes:window.__pokes}})()")
 
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path='/usr/bin/google-chrome')
@@ -32,27 +34,30 @@ with sync_playwright() as p:
         pg = b.new_page(viewport={'width': w, 'height': h}, has_touch=True, is_mobile=w < 900)
         setup(pg)
         cdp = pg.context.new_cdp_session(pg)
+        def ready():
+            # 等到可以放下、戳一戳冷卻結束、而且動物大致停住，避免機器忙碌時誤判
+            pg.wait_for_function("(()=>{const s=MZPlay.current().session;return s.canDrop()&&s.pokeCd<=0&&s.animals().every(b=>Math.hypot(b.velocity.x,b.velocity.y)<2)})()", timeout=8000)
         def tap(x, y, hold=0):
             cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': x, 'y': y}]})
             if hold: pg.wait_for_timeout(hold)
             cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
             pg.wait_for_timeout(450)
-        x, y = animal_screen(pg)
+        ready(); x, y = animal_screen(pg)
         s0 = state(pg); tap(x, y); s1 = state(pg)
-        check(name + '：輕點動物中心＝戳一戳（耗 10 能量、不放下）', s1['energy'] == s0['energy'] - 10 and s1['drops'] == s0['drops'])
-        pg.wait_for_timeout(500)
-        x, y = animal_screen(pg, 0.85)
+        check(name + '：輕點動物中心＝戳一戳（不放下）', s1['pokes'] == s0['pokes'] + 1 and s1['drops'] == s0['drops'], (s0, s1, x, y))
+        ready(); x, y = animal_screen(pg, 0.85)
         s2 = state(pg); tap(x, y); s3 = state(pg)
-        check(name + '：點在動物邊緣＝放下，不會誤戳', s3['drops'] == s2['drops'] + 1 and s3['energy'] >= s2['energy'])
-        pg.wait_for_timeout(700)
-        x, y = animal_screen(pg)
+        check(name + '：點在動物邊緣＝放下，不會誤戳', s3['drops'] == s2['drops'] + 1 and s3['pokes'] == s2['pokes'], (s2, s3))
+        ready(); x, y = animal_screen(pg)
         s4 = state(pg); tap(x, y, hold=450); s5 = state(pg)
-        check(name + '：按住動物比較久＝放下，不會誤戳', s5['drops'] == s4['drops'] + 1 and s5['energy'] >= s4['energy'])
+        check(name + '：按住動物比較久＝放下，不會誤戳', s5['drops'] == s4['drops'] + 1 and s5['pokes'] == s4['pokes'], (s4, s5))
         pg.wait_for_timeout(700)
-        pg.evaluate("(()=>{const g=MZPlay.current();g.session.energy=3;g.updateHud(true)})()")
+        ready()
         x, y = animal_screen(pg)
+        # 能量歸零後立刻點（不然剛好合成又會補能量）
+        pg.evaluate("(()=>{const g=MZPlay.current();g.session.energy=0;g.updateHud(true)})()")
         s6 = state(pg); tap(x, y); s7 = state(pg)
-        check(name + '：能量不夠時點動物＝直接放下', s7['drops'] == s6['drops'] + 1)
+        check(name + '：能量不夠時點動物＝直接放下', s7['drops'] == s6['drops'] + 1 and s7['pokes'] == s6['pokes'], (s6, s7, x, y))
         st = pg.query_selector('.stage').bounding_box()
         # 拖出遊戲區＝取消放下（用 CDP 觸控事件模擬拖曳）
         pg.wait_for_timeout(600)
