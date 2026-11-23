@@ -11,7 +11,7 @@ def check(cond, msg):
     if not cond: fails.append(msg)
 
 with sync_playwright() as p:
-    b = p.chromium.launch(executable_path=os.environ.get('CHROME', '/usr/bin/google-chrome'))
+    b = p.chromium.launch(**({'executable_path': os.environ['CHROME']} if os.environ.get('CHROME') else {}))
     pg = b.new_page(viewport={'width': 1180, 'height': 820})
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
