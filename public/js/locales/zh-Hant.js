@@ -91,7 +91,7 @@ I18N.add('zh-Hant', {
 
   'countdown.go': '開始！', 'countdown.aria': '{n} 秒後開始',
   'toast.gain': '拿到道具：{item}', 'toast.saved': '已自動存檔',
-  'hud.swap': '交換', 'hud.swapAria': '跟下一隻交換（S 鍵）', 'hud.pokeHint': '點箱子裡的動物可以戳一戳（耗 {n} 能量）', 'hud.pokeLeft': '戳一戳：這關還能用 {n} 次',
+  'hud.swap': '交換', 'hud.swapAria': '跟下一隻交換（S 鍵）', 'hud.pokeHint': '點箱內動物戳一戳', 'hud.pokeCost': '耗 {n} 能量', 'hud.pokeLeft': '戳一戳：這關還能用 {n} 次',
   'toast.noEnergy': '能量不夠（戳一戳要 {n}），合成可以集能量', 'toast.noPoke': '這關的戳一戳用完了',
   'how.7': '想換一隻就按「交換」（鍵盤 S），手上的動物會跟下一隻對調。點箱子裡的動物可以戳一戳，牠會彈一下往同伴推；經典與每日每次耗 10 能量，闖關每關 3 次。',
   'world.polar': '冰原', 'world.jungle': '叢林', 'world.dino': '恐龍',

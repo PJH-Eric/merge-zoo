@@ -317,8 +317,15 @@
           h('img', { src: Art.image(s.world.id, lv, 'normal').src, alt: '' })));
       }
     }
-    var pk = s.pokesLeft != null ? t('hud.pokeLeft', { n: s.pokesLeft }) : t('hud.pokeHint', { n: E.POKE_COST });
-    if (hd.pokeText !== pk) { hd.pokeText = pk; hd.pokeHint.textContent = pk; }
+    var pk = s.pokesLeft != null ? t('hud.pokeLeft', { n: s.pokesLeft }) : t('hud.pokeHint');
+    var cost = s.pokesLeft != null ? '' : t('hud.pokeCost', { n: E.POKE_COST });
+    if (hd.pokeText !== pk + cost) {
+      hd.pokeText = pk + cost;
+      hd.pokeHint.textContent = '';
+      hd.pokeHint.appendChild(h('span', { text: pk }));
+      // 能量消耗做成一顆不會被拆行的小標籤
+      if (cost) hd.pokeHint.appendChild(h('span', { class: 'poke-cost', text: '⚡ ' + cost }));
+    }
     hd.swap.disabled = !!s.armed || s.state !== 'playing';
     var nx = s.queue[s.armed ? 0 : 1];
     var key = s.world.id + nx.level + (nx.gold ? 'g' : '');

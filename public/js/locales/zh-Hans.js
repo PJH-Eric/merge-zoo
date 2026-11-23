@@ -91,7 +91,7 @@ I18N.add('zh-Hans', {
 
   'countdown.go': '开始！', 'countdown.aria': '{n} 秒后开始',
   'toast.gain': '拿到道具：{item}', 'toast.saved': '已自动存档',
-  'hud.swap': '交换', 'hud.swapAria': '跟下一只交换（S 键）', 'hud.pokeHint': '点箱子里的动物可以戳一戳（耗 {n} 能量）', 'hud.pokeLeft': '戳一戳：这关还能用 {n} 次',
+  'hud.swap': '交换', 'hud.swapAria': '跟下一只交换（S 键）', 'hud.pokeHint': '点箱内动物戳一戳', 'hud.pokeCost': '耗 {n} 能量', 'hud.pokeLeft': '戳一戳：这关还能用 {n} 次',
   'toast.noEnergy': '能量不够（戳一戳要 {n}），合成可以集能量', 'toast.noPoke': '这关的戳一戳用完了',
   'how.7': '想换一只就按「交换」（键盘 S），手上的动物会跟下一只对调。点箱子里的动物可以戳一戳，牠会弹一下往同伴推；经典与每日每次耗 10 能量，闯关每关 3 次。',
   'world.polar': '冰原', 'world.jungle': '丛林', 'world.dino': '恐龙',
