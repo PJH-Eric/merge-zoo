@@ -111,6 +111,13 @@
         onclick: function () { if (!open) { K.toast(t('levels.worldLocked')); return; } wi = i; root.Store.set('lastLevelWorld', w); render(); } },
         pic(w, 1, '', ''), h('span', { text: t('world.' + w) }), open ? null : K.icon('lock')));
     });
+    function scrollSelectedTab(behavior) {
+      var selected = tabs.querySelector('.tab[aria-selected="true"]');
+      if (!selected || !tabs.isConnected) return;
+      var tabsRect = tabs.getBoundingClientRect(), selectedRect = selected.getBoundingClientRect();
+      var target = tabs.scrollLeft + selectedRect.left - tabsRect.left + (selectedRect.width - tabs.clientWidth) / 2;
+      tabs.scrollTo({ left: Math.max(0, Math.min(tabs.scrollWidth - tabs.clientWidth, target)), behavior: behavior || 'auto' });
+    }
     function render() {
       tabs.querySelectorAll('.tab').forEach(function (b, i) { b.setAttribute('aria-selected', String(i === wi)); });
       var w = WORLD_IDS[wi], stars = 0;
@@ -130,9 +137,11 @@
       summary.textContent = t('world.' + w) + '・' + t('levels.stars', { n: stars + ' / 150' });
       gridHost.innerHTML = '';
       gridHost.appendChild(grid);
+      scrollSelectedTab('smooth');
     }
     render();
     host.appendChild(h('div', { class: 'levels-screen' }, tabs, summary, K.scrollArea(gridHost, 'screen-scroll levels-scroll')));
+    scrollSelectedTab('auto');
   };
 
   S.goalText = function (def) {
