@@ -91,8 +91,8 @@ I18N.add('en', {
 
   'countdown.go': 'Go!', 'countdown.aria': 'Starting in {n}',
   'toast.gain': 'New item: {item}', 'toast.saved': 'Saved',
-  'hud.swap': 'Swap', 'hud.swapAria': 'Swap with the next animal (S key)', 'hud.pokeHint': 'Tap an animal to poke it', 'hud.pokeCost': '{n} energy', 'hud.pokeLeft': 'Pokes left this level: {n}',
-  'toast.noEnergy': 'Not enough energy (poke needs {n}). Merge to fill it up', 'toast.noPoke': 'No pokes left this level',
+  'hud.info': 'Game info', 'hud.swap': 'Swap', 'hud.swapAria': 'Swap with the next animal (S key)', 'hud.pokeHint': 'Tap an animal to poke it', 'hud.pokeCost': '{n} energy', 'hud.pokeLeft': 'Pokes left this level: {n}',
+  
   'how.7': 'Press Swap (S key) to trade the animal in hand with the next one. Tap an animal in the box to poke it: it hops toward a matching buddy. Pokes cost 10 energy in Classic and Daily, and you get 3 per level.',
   'world.polar': 'Polar', 'world.jungle': 'Jungle', 'world.dino': 'Dino',
   'world.polar.feel': 'Slippery', 'world.jungle.feel': 'Sticky, barely rolls', 'world.dino.feel': 'Heavy and shaky',

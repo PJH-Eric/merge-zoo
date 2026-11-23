@@ -32,6 +32,8 @@
       s = new E.Session({
         mode: cfg.mode, world: cfg.world, difficulty: cfg.difficulty, level: cfg.level,
         rule: cfg.daily ? cfg.daily.rule : 'none',
+        // 直向（高明顯大於寬）就用加高的箱子
+        tall: root.innerHeight > root.innerWidth * 1.15,
         seed: cfg.daily ? cfg.daily.seed : (cfg.level ? cfg.level.seed : (Date.now() ^ (Math.random() * 1e9)) >>> 0)
       });
     }
@@ -106,19 +108,35 @@
     // 升級順序：10 級動物，已合出的亮起，最大的一隻加框
     hd.chain = h('div', { class: 'hud-chain', role: 'list' });
     hd.chainHint = h('div', { class: 'chain-hint', 'aria-live': 'polite' });
-    var inner = h('div', { class: 'hud-inner' },
+    this.nextCard = h('div', { class: 'hud-card hud-nextcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.next', text: t('hud.next') }), hd.next, hd.swap);
+    this.itemCard = h('div', { class: 'hud-card hud-itemcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.items', text: t('hud.items') }), hd.energy, hd.items, hd.pokeHint);
+    this.statCard = h('div', { class: 'hud-card hud-statcard' }, statBox);
+    this.hudInner = h('div', { class: 'hud-inner' },
       hd.title,
       h('div', { class: 'hud-card hud-scorecard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.score', text: t('hud.score') }), hd.score, hd.best),
       h('div', { class: 'hud-card hud-timecard' }, hd.timeLabel, hd.time),
       h('div', { class: 'hud-card hud-goalcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.goal', text: t('hud.goal') }), hd.goal, hd.limit),
-      h('div', { class: 'hud-card hud-nextcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.next', text: t('hud.next') }), hd.next, hd.swap),
-      h('div', { class: 'hud-card hud-itemcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.items', text: t('hud.items') }), hd.energy, hd.items, hd.pokeHint),
-      h('div', { class: 'hud-card hud-statcard' }, statBox),
+      this.nextCard, this.itemCard, this.statCard,
       h('div', { class: 'hud-card hud-chaincard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.chain', text: t('hud.chain') }), hd.chain, hd.chainHint),
       hd.endBtn);
     // 資訊欄內容超出時用自繪捲軸
-    this.side = h('aside', { class: 'hud' }, K.scrollArea(inner, 'hud-scroll'));
-    this.root = h('div', { class: 'play' }, this.side, this.stage);
+    var inner = this.hudInner;
+    // 手機：遊戲滿版，下方（橫向在左側）只留「交換」與「道具」；其餘資訊收進側拉面板
+    this.infoBtn = h('button', { type: 'button', class: 'info-btn', 'aria-expanded': 'false', 'data-i18n-attr': 'aria-label=hud.info;title=hud.info',
+      'aria-label': t('hud.info'), title: t('hud.info'), onclick: function () { self.toggleInfo(); } }, K.icon('chart'));
+    this.dock = h('div', { class: 'dock' }, this.infoBtn);
+    this.hudClose = h('button', { type: 'button', class: 'hud-close', 'data-i18n-attr': 'aria-label=common.close', 'aria-label': t('common.close'),
+      onclick: function () { self.toggleInfo(false); } }, K.icon('close'));
+    this.backdrop = h('div', { class: 'hud-backdrop', onclick: function () { self.toggleInfo(false); } });
+    this.side = h('aside', { class: 'hud', id: 'hud-panel' }, this.hudClose, K.scrollArea(inner, 'hud-scroll'));
+    this.infoBtn.setAttribute('aria-controls', 'hud-panel');
+    this.root = h('div', { class: 'play' }, this.side, this.stage, this.dock, this.backdrop);
+    this.phoneMQ = root.matchMedia ? root.matchMedia(PHONE_MQ) : null;
+    this.onPhone = function () { self.layoutPhone(); };
+    if (this.phoneMQ) {
+      if (this.phoneMQ.addEventListener) this.phoneMQ.addEventListener('change', this.onPhone); else this.phoneMQ.addListener(this.onPhone);
+    }
+    this.layoutPhone();
     this.host.appendChild(this.root);
     this.renderer = new root.MZRender.Renderer(this.canvas);
     this.bindInput();
@@ -161,6 +179,41 @@
     }
   };
 
+  // 直向（含平板直向、窄視窗）與矮橫向都用滿版＋工具列，資訊收進側拉面板
+  var PHONE_MQ = '(orientation: portrait), (max-aspect-ratio: 1/1), (max-height: 500px)';
+  // 戳一戳判定：輕點（不超過 280ms、移動不超過 10px），且點在動物中心 65% 範圍內
+  var POKE_TAP_MS = 280, POKE_SLOP = 10, POKE_CORE = 0.65;
+
+  /* ---------- 手機版面 ---------- */
+  Game.prototype.isPhone = function () { return !!(this.phoneMQ && this.phoneMQ.matches); };
+  /** 手機時把「下一隻＋交換」「道具」搬到底部工具列，桌機／平板時搬回資訊欄 */
+  Game.prototype.layoutPhone = function () {
+    var phone = this.isPhone();
+    this.root.classList.toggle('phone', phone);
+    if (phone) {
+      if (this.nextCard.parentNode !== this.dock) { this.dock.appendChild(this.nextCard); this.dock.appendChild(this.itemCard); }
+    } else {
+      if (this.nextCard.parentNode !== this.hudInner) {
+        this.hudInner.insertBefore(this.nextCard, this.statCard);
+        this.hudInner.insertBefore(this.itemCard, this.statCard);
+      }
+      this.toggleInfo(false);
+    }
+    if (this.renderer) this.renderer.resize();
+  };
+  /** 手機的資訊面板：打開時遊戲暫停計算，關掉就繼續 */
+  Game.prototype.toggleInfo = function (open) {
+    if (open == null) open = !this.infoOpen;
+    if (open && !this.isPhone()) open = false;
+    if (!!this.infoOpen === open) return;
+    this.infoOpen = open;
+    this.root.classList.toggle('hud-open', open);
+    this.infoBtn.setAttribute('aria-expanded', String(open));
+    this.side.setAttribute('aria-hidden', String(this.isPhone() && !open));
+    if (open) { this.updateHud(true); this.hudClose.focus(); }
+    else if (this.isPhone() && this.root.contains(root.document.activeElement)) this.infoBtn.focus();
+  };
+
   /* ---------- 輸入 ---------- */
   Game.prototype.bindInput = function () {
     var self = this, st = this.stage;
@@ -174,13 +227,9 @@
     st.addEventListener('pointerdown', function (e) {
       if (e.target.closest('.btn') || self.locked || self.paused) return;
       if (root.GameAudio) root.GameAudio.unlock();
-      // 點到箱子裡的動物＝戳一戳（不放下）
-      if (self.session.mode !== 'tutorial') {
-        var r0 = self.canvas.getBoundingClientRect();
-        var wp = self.renderer.toWorld(e.clientX - r0.left, e.clientY - r0.top);
-        var lp0 = self.session.worldToLocal(wp.x, wp.y);
-        if (lp0.y > 0 && self.session.animalAt(wp.x, wp.y)) { self.doPoke(wp.x, wp.y); return; }
-      }
+      // 可能是戳一戳：先記下來，放開時才決定（快速輕點、沒拖動才算戳）
+      self.pokeCand = self.pokeTarget(e);
+      self.pokeAim = self.session.aimX;
       self.pointer = e.pointerId;
       try { st.setPointerCapture(e.pointerId); } catch (err) {}
       aim(e);
@@ -190,13 +239,30 @@
     st.addEventListener('pointermove', function (e) {
       if (self.locked || self.paused) return;
       if (e.pointerType === 'mouse' && self.pointer == null) { aim(e); return; }
-      if (self.pointer === e.pointerId) aim(e);
+      if (self.pointer !== e.pointerId) return;
+      var pc = self.pokeCand;
+      if (pc && Math.hypot(e.clientX - pc.cx, e.clientY - pc.cy) > POKE_SLOP) self.pokeCand = null;
+      aim(e);
+      // 手指拖出遊戲區（例如拉到上方標題列）＝取消這次放下
+      self.renderer.cancelDrop = outside(e);
     });
+    function outside(e) {
+      var r = st.getBoundingClientRect();
+      return e.clientY < r.top - 4 || e.clientY > r.bottom + 4 || e.clientX < r.left - 4 || e.clientX > r.right + 4;
+    }
     function up(e) {
       if (self.pointer !== e.pointerId) return;
       self.pointer = null;
       self.renderer.aiming = false;
+      self.renderer.cancelDrop = false;
+      var pc = self.pokeCand; self.pokeCand = null;
       if (self.locked || self.paused || e.type === 'pointercancel') return;
+      if (outside(e)) { SFX('deny'); return; }
+      if (pc && performance.now() - pc.t <= POKE_TAP_MS && Math.hypot(e.clientX - pc.cx, e.clientY - pc.cy) <= POKE_SLOP) {
+        // 輕點動物＝戳一戳（手上的動物回到原本瞄準的位置）
+        self.session.setAim(self.pokeAim);
+        if (self.doPoke(pc.x, pc.y)) return;
+      }
       aim(e);
       self.tryDrop();
     }
@@ -214,7 +280,8 @@
     this.onKey = function (e) {
       if (K.modalOpen() || self.app.screen !== 'play') return;
       var k = e.key, down = e.type === 'keydown';
-      if (k === 'Escape' && down) { e.preventDefault(); self.pause(true); return; }
+      if (k === 'Escape' && down) { e.preventDefault(); if (self.infoOpen) self.toggleInfo(false); else self.pause(true); return; }
+      if (self.infoOpen) return;
       if (self.locked || self.paused) return;
       if (k === 'ArrowLeft' || k === 'a' || k === 'A') { self.keys.left = down; e.preventDefault(); }
       else if (k === 'ArrowRight' || k === 'd' || k === 'D') { self.keys.right = down; e.preventDefault(); }
@@ -232,6 +299,7 @@
     var s = this.session;
     if (s.mode === 'tutorial' && this.tutStep === 0) this.tutorialStep(1);
     if (s.drop()) {
+      if (this.isPhone() && root.navigator && root.navigator.vibrate && P.settings().vibrate) { try { root.navigator.vibrate(8); } catch (e) {} }
       if (s.mode === 'tutorial' && this.tutStep <= 1) this.tutorialStep(2);
     }
   };
@@ -240,11 +308,27 @@
     if (this.locked || this.paused) return;
     if (this.session.swap()) { SFX('swap'); this.updateHud(true); } else SFX('deny');
   };
+  /**
+   * 戳一戳的目標：要「確實點在動物身上」才算——
+   * 點在動物中心附近（半徑 65% 內）、在紅線下方、沒有拿著道具，而且現在戳得了。
+   * 戳不了（能量不夠、次數用完、冷卻中）就回傳 null，這一下會當作一般放下。
+   */
+  Game.prototype.pokeTarget = function (e) {
+    var s = this.session;
+    if (s.mode === 'tutorial' || s.armed || s.canPoke() !== 'ok') return null;
+    var r0 = this.canvas.getBoundingClientRect();
+    var wp = this.renderer.toWorld(e.clientX - r0.left, e.clientY - r0.top);
+    var lp = s.worldToLocal(wp.x, wp.y);
+    if (lp.y < s.lineY + 12) return null;
+    var b = s.animalAt(wp.x, wp.y);
+    if (!b || Math.hypot(wp.x - b.position.x, wp.y - b.position.y) > b.circleRadius * POKE_CORE) return null;
+    return { x: wp.x, y: wp.y, cx: e.clientX, cy: e.clientY, t: performance.now() };
+  };
+  /** 回傳 true＝真的戳到了 */
   Game.prototype.doPoke = function (x, y) {
     var res = this.session.poke(x, y);
-    if (res === 'ok') { SFX('poke'); this.updateHud(true); }
-    else if (res === 'energy') { SFX('deny'); K.toast(t('toast.noEnergy', { n: E.POKE_COST })); }
-    else if (res === 'none') { SFX('deny'); K.toast(t('toast.noPoke')); }
+    if (res === 'ok') { SFX('poke'); this.updateHud(true); return true; }
+    return false;
   };
 
   Game.prototype.useItem = function (i) {
@@ -257,7 +341,7 @@
     var dt = this.lastT ? Math.min(0.1, (now - this.lastT) / 1000) : 0;
     this.lastT = now;
     var s = this.session;
-    if (!this.paused && !this.locked && s.state === 'playing') {
+    if (!this.paused && !this.locked && !this.infoOpen && s.state === 'playing') {
       if (this.keys.left || this.keys.right) s.setAim(s.aimX + ((this.keys.right ? 1 : 0) - (this.keys.left ? 1 : 0)) * 420 * dt);
       s.update(dt);
       this.hudT += dt; this.saveT += dt;
@@ -370,7 +454,7 @@
         this.armTag.appendChild(h('span', { text: t('hud.armed', { item: t('item.' + s.armed) }) }));
         this.armTag.appendChild(K.button({ label: t('hud.cancel'), variant: 'mini', onClick: function () { s.cancelArm(); self.updateHud(true); } }));
       }
-      this.side.querySelector('.hud-itemcard').hidden = s.mode === 'tutorial';
+      this.itemCard.hidden = s.mode === 'tutorial';
     }
   };
 
@@ -594,6 +678,7 @@
     root.cancelAnimationFrame(this.raf);
     clearTimeout(this.countdownTimer);
     root.removeEventListener('keydown', this.onKey);
+    if (this.phoneMQ) { if (this.phoneMQ.removeEventListener) this.phoneMQ.removeEventListener('change', this.onPhone); else this.phoneMQ.removeListener(this.onPhone); }
     root.removeEventListener('keyup', this.onKey);
     root.removeEventListener('resize', this.onResize);
     root.removeEventListener('pagehide', this.onHide);

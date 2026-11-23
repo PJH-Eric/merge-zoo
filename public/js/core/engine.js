@@ -40,6 +40,13 @@
     this.mechanics = (lv.mechanics || []).slice();
     this.canRotate = !!(lv.rotate || this.rule === 'rotate');
     this.spawnY = this.canRotate ? D.BOX.SPAWN_Y : D.BOX.SPAWN_IN;
+    // 直向螢幕：箱子改成「窄一點、高一點」（面積不變，難度相當），可玩區才不會只剩下半截
+    // 可旋轉的關卡維持原本形狀；一局開始就固定，中途轉向不會變
+    this.tall = !!opts.tall && !this.canRotate;
+    if (this.tall) {
+      this.W = Math.round(this.W * D.BOX.TALL);
+      this.H = Math.round(D.BOX.H / D.BOX.TALL);
+    }
     this.rotateMax = (this.diff.rotateMax || 45) * Math.PI / 180;
     this.canLose = this.mode === 'tutorial' ? false : (this.mode === 'level' ? true : this.diff.canLose);
     this.useEnergy = this.mode === 'classic' || this.mode === 'daily';
@@ -319,6 +326,14 @@
       if (Math.hypot(b.position.x - x, b.position.y - y) <= b.circleRadius + 4) hit = b;
     });
     return hit;
+  };
+  /** 現在能不能戳：'ok'／'cooldown'／'energy'（能量不夠）／'none'（本關次數用完）／'miss'（不在遊戲中） */
+  Session.prototype.canPoke = function () {
+    if (this.state !== 'playing') return 'miss';
+    if (this.pokeCd > 0) return 'cooldown';
+    if (this.useEnergy) return this.energy >= POKE_COST ? 'ok' : 'energy';
+    if (this.pokesLeft != null) return this.pokesLeft > 0 ? 'ok' : 'none';
+    return 'ok';
   };
   /** 戳一戳：點箱子裡的動物讓牠彈一下，往最近的同伴推。回傳 'ok'／'miss'／'cooldown'／'energy'／'none' */
   Session.prototype.poke = function (x, y) {
@@ -672,7 +687,7 @@
   /* ---------- 存檔 ---------- */
   Session.prototype.serialize = function () {
     return {
-      v: 1, world: this.world.id, difficulty: this.diff.id, mode: this.mode, rule: this.rule,
+      v: 1, world: this.world.id, difficulty: this.diff.id, mode: this.mode, rule: this.rule, tall: this.tall,
       t: this.t, score: this.score, energy: this.energy, items: this.items.slice(), queue: this.queue.slice(),
       rng: this.rng.state, stats: JSON.parse(JSON.stringify(this.stats)), chain: this.chain,
       bodies: this.animals().filter(function (b) { return b.mz.kind === 'animal'; }).map(function (b) {
@@ -681,7 +696,7 @@
     };
   };
   Session.restore = function (data, extra) {
-    var s = new Session(Object.assign({ world: data.world, difficulty: data.difficulty, mode: data.mode, rule: data.rule, seed: 1 }, extra || {}));
+    var s = new Session(Object.assign({ world: data.world, difficulty: data.difficulty, mode: data.mode, rule: data.rule, tall: !!data.tall, seed: 1 }, extra || {}));
     s.rng.state = data.rng;
     s.t = data.t; s.score = data.score; s.energy = data.energy; s.items = data.items; s.queue = data.queue;
     s.stats = data.stats; s.chain = 0;

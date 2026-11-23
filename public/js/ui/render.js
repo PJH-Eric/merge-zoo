@@ -47,7 +47,9 @@
     var vw = halfW * 2, vh = bottom - top;
     this.scale = Math.min(w / vw, h / vh);
     this.ox = w / 2;
-    this.oy = (h - vh * this.scale) / 2 - top * this.scale;
+    // 直向時高度有剩：箱子貼近下方（靠近手指與工具列），多出的空間留在上方天空
+    var slack = h - vh * this.scale;
+    this.oy = (slack > 24 ? slack - Math.min(10, slack / 2) : slack / 2) - top * this.scale;
   };
 
   /** 螢幕座標 → 物理座標 */
@@ -401,9 +403,9 @@
     if (s.state === 'over') return;
     var h = s.held(), x = s.aimX, y = s.spawnY;
     var r = s.heldRadius();
-    var ready = s.cooldown <= 0;
-    // 落點預告線
-    if (this.opts.guide && s.diff.guide !== false && (s.mode === 'level' || s.diff.guide)) {
+    var ready = s.cooldown <= 0 && !this.cancelDrop;
+    // 落點預告線（手指拖出遊戲區＝取消，就不畫）
+    if (!this.cancelDrop && this.opts.guide && s.diff.guide !== false && (s.mode === 'level' || s.diff.guide)) {
       var hit = this.guideHit(s, x, r);
       g.save(); g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineWidth = 2.5; g.setLineDash([8, 8]);
       g.beginPath(); g.moveTo(x, y + r); g.lineTo(x, hit); g.stroke();

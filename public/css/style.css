@@ -237,7 +237,7 @@ img { -webkit-user-drag: none; user-select: none; }
 /* ---------- 遊戲畫面 ---------- */
 .play { position: absolute; inset: 0; display: grid;
   --stage-h: calc(100dvh - var(--topbar) - var(--safe-t));
-  grid-template-columns: clamp(170px, calc(100vw - var(--stage-h) * 1.02), 380px) minmax(0, 1fr); }
+  grid-template-columns: clamp(170px, calc(100vw - var(--stage-h) * 1.02), 330px) minmax(0, 1fr); }
 .hud { container-type: inline-size; position: relative; min-height: 0; background: rgba(255, 246, 230, 0.94); border-right: 2px solid var(--line); z-index: 2; display: flex; flex-direction: column; }
 .hud-scroll { flex: 1 1 auto; min-height: 0; }
 .hud-inner {
@@ -376,7 +376,7 @@ img { -webkit-user-drag: none; user-select: none; }
   :root { --topbar: 48px; }
   .btn-icon { width: 40px; min-width: 40px; height: 40px; min-height: 40px; }
   .pill-btn { min-height: 40px; }
-  .play { grid-template-columns: clamp(176px, calc(100vw - var(--stage-h) * 1.02), 380px) minmax(0, 1fr); }
+  .play { grid-template-columns: clamp(176px, calc(100vw - var(--stage-h) * 1.02), 330px) minmax(0, 1fr); }
   .items { gap: 4px; }
   .hud-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; gap: 5px; }
   .hud-goalcard, .end-btn { grid-column: 1 / -1; }
@@ -496,9 +496,10 @@ img { -webkit-user-drag: none; user-select: none; }
 @media (orientation: landscape) and (min-aspect-ratio: 1/1) {
   @container (min-width: 280px) {
     .hud-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; gap: 10px; }
-    .hud-goalcard, .end-btn { grid-column: 1 / -1; }
+    .hud-goalcard, .end-btn, .hud-itemcard, .hud-chaincard { grid-column: 1 / -1; }
     .hud-nextcard { justify-content: space-between; }
-    .hud-chain { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .hud-itemcard, .hud-chaincard, .end-btn { order: 2; }
+    .hud-chain { grid-template-columns: repeat(10, minmax(0, 1fr)); }
     .end-btn { margin-top: 0; }
   }
   @container (min-width: 400px) {
@@ -507,3 +508,71 @@ img { -webkit-user-drag: none; user-select: none; }
     .next-pic img { width: clamp(36px, 9vh, 76px); height: clamp(36px, 9vh, 76px); }
   }
 }
+
+/* ===== 手機：遊戲滿版，只留交換與道具，其餘資訊收進側拉面板 ===== */
+.dock, .hud-backdrop, .hud-close { display: none; }
+.play.phone { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+.play.phone .stage { grid-row: 1; grid-column: 1; }
+/* 工具列本身就是一張卡片；裡面的「下一隻」「道具」卡片拆開（display: contents）直接排進格線 */
+.play.phone .dock { grid-row: 2; grid-column: 1; display: grid; z-index: 3; min-width: 0;
+  grid-template-columns: auto auto auto minmax(0, 1fr); grid-template-areas: "info next swap energy" "items items items items";
+  align-items: center; gap: 6px 8px;
+  padding: 6px calc(10px + var(--safe-r)) calc(6px + var(--safe-b)) calc(10px + var(--safe-l));
+  background: rgba(255, 246, 230, 0.97); border-top: 2px solid var(--line); }
+.play.phone .dock .hud-card { display: contents; }
+.play.phone .dock .hud-label, .play.phone .dock .poke-hint, .play.phone .dock .keycap { display: none; }
+.play.phone .dock .info-btn { grid-area: info; }
+.play.phone .dock .next-pic { grid-area: next; }
+.play.phone .dock .swap-btn { grid-area: swap; }
+.play.phone .dock .hud-energy { grid-area: energy; min-width: 0; }
+.play.phone .dock .items { grid-area: items; }
+.play.phone .dock .next-pic img { width: 40px; height: 40px; }
+.play.phone .dock .swap-btn { min-height: 44px; min-width: 44px; padding: 2px 10px; font-size: 14px; border-radius: 13px; }
+.play.phone .dock .swap-txt { display: inline; }
+.play.phone .dock .items { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.play.phone .dock .item-slot { height: 50px; }
+.play.phone .dock .item-slot img { width: 36px; height: 36px; }
+.info-btn { flex: 0 0 auto; width: 44px; height: 44px; min-height: 44px; display: grid; place-items: center; border: 2px solid var(--ink); border-radius: 13px;
+  background: var(--paper-2); box-shadow: 0 2px 0 var(--ink); color: var(--ink); cursor: pointer; padding: 0; }
+.info-btn:active, .swap-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+.info-btn:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+/* 側拉資訊面板 */
+.play.phone .hud { position: absolute; top: 0; bottom: 0; left: 0; width: min(380px, 88vw); z-index: 20;
+  border-right: 2px solid var(--line); border-bottom: 0; transform: translateX(-104%); transition: transform .22s ease; visibility: hidden;
+  box-shadow: 6px 0 24px rgba(59, 46, 74, .25); padding-top: calc(52px + var(--safe-t)); }
+.play.phone.hud-open .hud { transform: none; visibility: visible; }
+.play.phone .hud-scroll .sa-view { height: 100%; max-height: none; }
+.play.phone .hud-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; gap: 8px; padding: 4px 12px 14px calc(12px + var(--safe-l)); }
+.play.phone .hud-inner > * { grid-column: auto; order: 0; }
+.play.phone .hud-goalcard, .play.phone .hud-statcard, .play.phone .hud-chaincard, .play.phone .end-btn { grid-column: 1 / -1; }
+.play.phone .hud-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.play.phone .hud-chaincard { flex-direction: column; align-items: stretch; }
+.play.phone .hud-chaincard .hud-label { display: block; }
+.play.phone .hud-chain { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.play.phone .hud-close { display: grid; place-items: center; position: absolute; top: calc(6px + var(--safe-t)); right: 8px; width: 40px; height: 40px;
+  border: 2px solid var(--ink); border-radius: 12px; background: var(--paper-2); box-shadow: 0 2px 0 var(--ink); cursor: pointer; padding: 0; color: var(--ink); }
+.play.phone.hud-open .hud-backdrop { display: block; position: absolute; inset: 0; z-index: 19; background: rgba(59, 46, 74, .35); }
+@media (prefers-reduced-motion: reduce) { .play.phone .hud { transition: none; } }
+/* 很窄的手機（≤360）：交換與戳只留圖示 */
+@media (orientation: portrait) and (max-width: 360px) {
+  .play.phone .dock { gap: 5px 6px; padding-left: calc(6px + var(--safe-l)); padding-right: calc(6px + var(--safe-r)); }
+  .play.phone .dock .swap-txt { display: none; }
+  .play.phone .dock .next-pic img { width: 34px; height: 34px; }
+  .play.phone .dock .item-slot { height: 46px; }
+}
+/* 手機橫向：工具列改放左側一欄 */
+@media (orientation: landscape) {
+  .play.phone { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+  .play.phone .stage { grid-row: 1; grid-column: 2; }
+  .play.phone .dock { grid-row: 1; grid-column: 1; width: calc(196px + var(--safe-l)); border-top: 0; border-right: 2px solid var(--line);
+    grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "info next swap" "energy energy energy" "items items items";
+    align-content: center; gap: 8px; padding: 8px 8px calc(8px + var(--safe-b)) calc(8px + var(--safe-l)); }
+  .play.phone .dock .next-pic { justify-self: center; }
+  .play.phone .dock .swap-txt { display: none; }
+  .play.phone .dock .item-slot { height: 46px; }
+}
+/* 手機直向但比較寬（500–600）：工具列內容置中、不要拉太開 */
+.play.phone .dock { padding-left: max(calc(10px + var(--safe-l)), calc((100% - 400px) / 2)); padding-right: max(calc(10px + var(--safe-r)), calc((100% - 400px) / 2)); }
+@media (orientation: landscape) { .play.phone .dock { padding-left: calc(8px + var(--safe-l)); padding-right: 8px; } }
+/* 闖關沒有能量條：工具列第一列右邊改顯示這關還能戳幾次 */
+.play.phone .dock .hud-energy[hidden] ~ .poke-hint { display: block; grid-area: energy; font-size: 12px; line-height: 1.3; }

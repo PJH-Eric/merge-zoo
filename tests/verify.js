@@ -77,6 +77,16 @@ test('放下冷卻 0.5 秒', () => {
   steps(s, 31);
   assert.ok(s.drop(50));
 });
+test('直向加高箱子：面積相當、存檔還原保持形狀、旋轉關卡不加高', () => {
+  const a = new E.Session({ mode: 'classic', difficulty: 'normal', seed: 1 });
+  const b = new E.Session({ mode: 'classic', difficulty: 'normal', seed: 1, tall: true });
+  assert.ok(b.H > a.H && b.W < a.W);
+  assert.ok(Math.abs(b.W * b.H - a.W * a.H) / (a.W * a.H) < 0.02);
+  const r = E.Session.restore(b.serialize());
+  assert.strictEqual(r.W, b.W); assert.strictEqual(r.H, b.H);
+  const rot = new E.Session({ mode: 'classic', difficulty: 'normal', rule: 'rotate', seed: 1, tall: true });
+  assert.strictEqual(rot.H, D.BOX.H);
+});
 test('紅線：停在紅線上超過 2 秒才算輸', () => {
   const s = session();
   const b = s.makeBody('animal', 5, 0, 20); b.mz.born = -10; b.mz.landed = true;
