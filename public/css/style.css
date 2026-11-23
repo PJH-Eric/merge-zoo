@@ -134,7 +134,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .setup { max-width: 860px; margin: 0 auto; padding-top: 6px; }
 .sec-title { font-size: 18px; margin: 18px 0 10px; font-weight: 900; }
 .choice-grid { display: grid; gap: 12px; }
-.worlds { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.worlds { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .diffs { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 @media (max-width: 760px) { .worlds { grid-template-columns: repeat(2, minmax(0, 1fr)); } .diffs { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 420px) { .diffs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -151,7 +151,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .choice-pics img { width: 34px; margin: 0 -4px; } .choice-pics img:nth-child(2) { width: 46px; } .choice-pics img:nth-child(3) { width: 62px; }
 .world-choice.w-zoo { background-color: #FFEBC9; } .world-choice.w-ocean { background-color: #D8F1FC; }
 .world-choice.w-sweets { background-color: #FFE3EE; } .world-choice.w-space { background-color: #E6E1FF; }
-.world-choice.w-polar { background-color: #E8F5FD; } .world-choice.w-jungle { background-color: #E2F4D6; } .world-choice.w-dino { background-color: #FBE6CC; }
+.world-choice.w-polar { background-color: #E8F5FD; } .world-choice.w-jungle { background-color: #E2F4D6; } .world-choice.w-dino { background-color: #FBE6CC; } .world-choice.w-farm { background-color: #FBF0D2; }
 .setup-go { display: flex; justify-content: center; margin: 22px 0 8px; }
 .big-go { min-width: 220px; min-height: 60px; font-size: 22px; border-radius: 20px; }
 .daily-card { display: flex; align-items: center; gap: 16px; margin-top: 14px; padding: 14px 16px; border: 2.5px solid var(--ink); border-radius: 20px; background: #EEE9FF; box-shadow: 0 4px 0 var(--ink); }
@@ -205,7 +205,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .codex-lv { position: absolute; top: 4px; left: 8px; font-size: 12px; font-weight: 800; color: var(--ink-2); }
 .codex-world.w-zoo .codex-card:not(.locked) { background: #FFF3DF; } .codex-world.w-ocean .codex-card:not(.locked) { background: #E3F5FD; }
 .codex-world.w-sweets .codex-card:not(.locked) { background: #FFEDF4; } .codex-world.w-space .codex-card:not(.locked) { background: #EEEBFF; }
-.codex-world.w-polar .codex-card:not(.locked) { background: #EEF8FE; } .codex-world.w-jungle .codex-card:not(.locked) { background: #EAF7E0; } .codex-world.w-dino .codex-card:not(.locked) { background: #FDEEDB; }
+.codex-world.w-polar .codex-card:not(.locked) { background: #EEF8FE; } .codex-world.w-jungle .codex-card:not(.locked) { background: #EAF7E0; } .codex-world.w-dino .codex-card:not(.locked) { background: #FDEEDB; } .codex-world.w-farm .codex-card:not(.locked) { background: #FCF4DE; }
 .codex-detail { text-align: center; }
 .codex-detail img { width: min(220px, 60vw); }
 .codex-meta { font-weight: 800; color: var(--ink-2); }
