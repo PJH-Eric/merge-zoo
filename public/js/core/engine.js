@@ -39,6 +39,7 @@
     this.shape = (lv.box && lv.box.shape) || ({ bowl: 'bowl', funnel: 'funnel' })[this.rule] || 'box';
     this.mechanics = (lv.mechanics || []).slice();
     this.canRotate = !!(lv.rotate || this.rule === 'rotate');
+    this.spawnY = this.canRotate ? D.BOX.SPAWN_Y : D.BOX.SPAWN_IN;
     this.rotateMax = (this.diff.rotateMax || 45) * Math.PI / 180;
     this.canLose = this.mode === 'tutorial' ? false : (this.mode === 'level' ? true : this.diff.canLose);
     this.useEnergy = this.mode === 'classic' || this.mode === 'daily';
@@ -247,7 +248,7 @@
     if (this.level && this.level.drops && this.stats.drops >= this.level.drops && !this.armed) return false;
     if (x != null) this.setAim(x);
     // 放下位置＝畫面上手持動物的位置（世界座標），箱子轉斜時也一致
-    var p = { x: this.aimX, y: D.BOX.SPAWN_Y };
+    var p = { x: this.aimX, y: this.spawnY };
     var body;
     if (this.armed) {
       body = this.makeBody(this.armed, 2, p.x, p.y);

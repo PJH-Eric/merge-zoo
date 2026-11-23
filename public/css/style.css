@@ -237,7 +237,7 @@ img { -webkit-user-drag: none; user-select: none; }
 /* ---------- 遊戲畫面 ---------- */
 .play { position: absolute; inset: 0; display: grid;
   --stage-h: calc(100dvh - var(--topbar) - var(--safe-t));
-  grid-template-columns: clamp(170px, calc(100vw - var(--stage-h) * 0.92), 440px) minmax(0, 1fr); }
+  grid-template-columns: clamp(170px, calc(100vw - var(--stage-h) * 1.02), 380px) minmax(0, 1fr); }
 .hud { container-type: inline-size; position: relative; min-height: 0; background: rgba(255, 246, 230, 0.94); border-right: 2px solid var(--line); z-index: 2; display: flex; flex-direction: column; }
 .hud-scroll { flex: 1 1 auto; min-height: 0; }
 .hud-inner {
@@ -376,7 +376,7 @@ img { -webkit-user-drag: none; user-select: none; }
   :root { --topbar: 48px; }
   .btn-icon { width: 40px; min-width: 40px; height: 40px; min-height: 40px; }
   .pill-btn { min-height: 40px; }
-  .play { grid-template-columns: clamp(176px, calc(100vw - var(--stage-h) * 0.92), 440px) minmax(0, 1fr); }
+  .play { grid-template-columns: clamp(176px, calc(100vw - var(--stage-h) * 1.02), 380px) minmax(0, 1fr); }
   .items { gap: 4px; }
   .hud-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; gap: 5px; }
   .hud-goalcard, .end-btn { grid-column: 1 / -1; }

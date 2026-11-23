@@ -35,8 +35,9 @@
     if (!s) return;
     // 可視範圍：箱子＋上方手持區；可旋轉時保留轉斜後的空間
     // 只留手持動物與箱框需要的空間，讓箱子盡量放大
-    var heldR = D.RADII[Math.min(10, s.diff.maxSpawn + 1)];
-    var halfW = s.W / 2 + 26, top = D.BOX.SPAWN_Y - heldR - 6, bottom = s.H + 26;
+    // 手上最大只會拿到 maxSpawn 這一級；底部只留箱底木框的厚度
+    var heldR = D.RADII[Math.min(10, s.diff.maxSpawn)];
+    var halfW = s.W / 2 + 26, top = s.spawnY - heldR - 4, bottom = s.H + 14;
     if (s.canRotate) {
       var ang = s.rotateMax, hw = s.W / 2 + 40, hh = s.H / 2 + 40;
       halfW = Math.max(halfW, Math.cos(ang) * hw + Math.sin(ang) * hh);
@@ -398,7 +399,7 @@
 
   Renderer.prototype.drawHeld = function (g, s) {
     if (s.state === 'over') return;
-    var h = s.held(), x = s.aimX, y = D.BOX.SPAWN_Y;
+    var h = s.held(), x = s.aimX, y = s.spawnY;
     var r = s.heldRadius();
     var ready = s.cooldown <= 0;
     // 落點預告線
@@ -439,7 +440,7 @@
         if (top < best) best = top;
       }
     });
-    return Math.max(D.BOX.SPAWN_Y + r * 2, best);
+    return Math.max(s.spawnY + r * 2, best);
   };
 
   Renderer.prototype.drawParticles = function (g, dt) {

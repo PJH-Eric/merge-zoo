@@ -347,7 +347,7 @@
     {"id":"dino-45","world":"dino","index":45,"seed":151056671,"boss":false,"lift":0.69,"goal":{"type":"make","level":8,"count":1},"drops":50,"rotate":true,"box":{"shape":"bowl"},"stars":[13150,17750]},
     {"id":"dino-46","world":"dino","index":46,"seed":167834290,"boss":false,"lift":0.69,"goal":{"type":"score","target":26350},"mechanics":[{"type":"paddle","side":1,"speed":1.1680000000000001,"period":6}],"stars":[27850,37550]},
     {"id":"dino-47","world":"dino","index":47,"seed":184611909,"boss":false,"lift":0.7,"goal":{"type":"make","level":8,"count":1},"stars":[32300,43600]},
-    {"id":"dino-48","world":"dino","index":48,"seed":201389528,"boss":false,"lift":0.7,"goal":{"type":"score","target":15850},"drops":50,"items":{"rainbow":1,"bomb":1,"shake":1},"stars":[16650,22500]},
+    {"id":"dino-48","world":"dino","index":48,"seed":201389528,"boss":false,"lift":0.7,"goal":{"type":"score","target":14500},"drops":50,"items":{"rainbow":1,"bomb":1,"shake":1},"stars":[16650,22500]},
     {"id":"dino-49","world":"dino","index":49,"seed":218167147,"boss":false,"lift":0.7,"goal":{"type":"score","target":36750},"time":80,"lineOffset":40,"ice":[{"x":-0.6,"level":2},{"x":0,"level":5},{"x":0.6,"level":3}],"stars":[37750,51000]},
     {"id":"dino-50","world":"dino","index":50,"seed":2315516617,"boss":true,"lift":0.7,"goal":{"type":"make","level":7,"count":1},"drops":50,"lineOffset":30,"box":{"shape":"divider"},"stars":[7100,9550]},
     {"id":"farm-1","world":"farm","index":1,"seed":3703727659,"boss":false,"lift":0.63,"goal":{"type":"score","target":21450},"box":{"shape":"funnel"},"stars":[22700,30650]},
