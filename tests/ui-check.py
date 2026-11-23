@@ -70,7 +70,7 @@ def main():
         b = p.chromium.launch(**({'executable_path': os.environ['CHROME']} if os.environ.get('CHROME') else {}))
         for lang in ['zh-Hant', 'zh-Hans', 'en']:
             for vname, (w, h) in VIEWPORTS.items():
-                if ONLY and ONLY not in vname:
+                if ONLY and not (vname in ONLY.split(',') if ',' in ONLY or ONLY in VIEWPORTS else ONLY in vname):
                     continue
                 ctx = b.new_context(viewport={'width': w, 'height': h}, has_touch=vname.startswith(('phone', 'tablet')))
                 pg = ctx.new_page()
