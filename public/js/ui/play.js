@@ -308,8 +308,12 @@
       // 手上的動物與「兩隻一樣會合成的下一級」一起標出來
       hd.chainHint.innerHTML = '';
       if (hl) {
-        hd.chainHint.appendChild(document.createTextNode(t('hud.mergeHint', { a: charName(s.world.id, hl) })));
-        hd.chainHint.appendChild(h('b', { text: hl < 10 ? charName(s.world.id, hl + 1) : t('hud.mergeTop') }));
+        // 動物名字整段不拆行：只允許在名字前後換行
+        var hintParts = t('hud.mergeHint', { a: '\u0000' }).split('\u0000');
+        hd.chainHint.appendChild(document.createTextNode(hintParts[0]));
+        hd.chainHint.appendChild(h('span', { class: 'nowrap', text: charName(s.world.id, hl) }));
+        hd.chainHint.appendChild(document.createTextNode(hintParts.slice(1).join('')));
+        hd.chainHint.appendChild(h('b', { class: hl < 10 ? 'nowrap' : '', text: hl < 10 ? charName(s.world.id, hl + 1) : t('hud.mergeTop') }));
       }
       for (var lv = 1; lv <= 10; lv++) {
         hd.chain.appendChild(h('span', { class: 'chain-cell' + (lv <= reached ? ' got' : '') + (lv === reached ? ' top' : '') + (lv === hl ? ' held' : '') + (hl && lv === hl + 1 ? ' result' : ''), role: 'listitem',
