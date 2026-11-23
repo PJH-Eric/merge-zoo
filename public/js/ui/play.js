@@ -88,13 +88,31 @@
     hd.endBtn = K.button({ label: t('hud.end'), variant: 'ghost', class: 'end-btn', onClick: function () { self.session.endNow(); } });
     hd.endBtn.querySelector('.btn-label').setAttribute('data-i18n', 'hud.end');
     hd.title = h('div', { class: 'hud-title' });
-    this.side = h('aside', { class: 'hud' },
+    // 時間：經典／每日顯示已玩時間，限時關卡顯示剩餘時間
+    hd.timeLabel = h('span', { class: 'hud-label' });
+    hd.time = h('b', { class: 'hud-time' });
+    // 本局統計
+    hd.stat = {};
+    var statBox = h('dl', { class: 'hud-stats' });
+    ['drops', 'merges', 'combo', 'maxCombo'].forEach(function (k) {
+      hd.stat[k] = h('dd');
+      statBox.appendChild(h('div', { class: 'hud-stat hs-' + k }, h('dt', { 'data-i18n': 'hud.stat.' + k, text: t('hud.stat.' + k) }), hd.stat[k]));
+    });
+    // 升級順序：10 級動物，已合出的亮起，最大的一隻加框
+    hd.chain = h('div', { class: 'hud-chain', role: 'list' });
+    hd.chainHint = h('div', { class: 'chain-hint', 'aria-live': 'polite' });
+    var inner = h('div', { class: 'hud-inner' },
       hd.title,
       h('div', { class: 'hud-card hud-scorecard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.score', text: t('hud.score') }), hd.score, hd.best),
+      h('div', { class: 'hud-card hud-timecard' }, hd.timeLabel, hd.time),
       h('div', { class: 'hud-card hud-goalcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.goal', text: t('hud.goal') }), hd.goal, hd.limit),
       h('div', { class: 'hud-card hud-nextcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.next', text: t('hud.next') }), hd.next),
       h('div', { class: 'hud-card hud-itemcard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.items', text: t('hud.items') }), hd.energy, hd.items),
+      h('div', { class: 'hud-card hud-statcard' }, statBox),
+      h('div', { class: 'hud-card hud-chaincard' }, h('span', { class: 'hud-label', 'data-i18n': 'hud.chain', text: t('hud.chain') }), hd.chain, hd.chainHint),
       hd.endBtn);
+    // 資訊欄內容超出時用自繪捲軸
+    this.side = h('aside', { class: 'hud' }, K.scrollArea(inner, 'hud-scroll'));
     this.root = h('div', { class: 'play' }, this.side, this.stage);
     this.host.appendChild(this.root);
     this.renderer = new root.MZRender.Renderer(this.canvas);
@@ -239,9 +257,42 @@
       hd.goal.textContent = this.goalText + (p ? '  ' + Math.min(p.cur, p.need).toLocaleString() + ' / ' + p.need.toLocaleString() : '');
       var lim = [];
       var tl = s.timeLeft(), dl = s.dropsLeft();
-      if (tl != null) lim.push(t('hud.time') + ' ' + Math.ceil(tl) + 's');
       if (dl != null) lim.push(t('hud.drops') + ' ' + dl);
       hd.limit.textContent = lim.join('・');
+    }
+    // 時間
+    var tl2 = s.timeLeft();
+    var secs = tl2 != null ? Math.ceil(tl2) : Math.floor(s.t);
+    hd.timeLabel.textContent = t(tl2 != null ? 'hud.timeLeft' : 'hud.time');
+    hd.time.textContent = Math.floor(secs / 60) + ':' + ('0' + (secs % 60)).slice(-2);
+    hd.time.classList.toggle('warn', tl2 != null && tl2 <= 10);
+    // 統計
+    var comboNow = s.t - s.lastMergeT <= 1 ? Math.min(5, s.chain) : 0;
+    hd.stat.drops.textContent = s.stats.drops;
+    hd.stat.merges.textContent = s.stats.merges;
+    hd.stat.combo.textContent = comboNow > 1 ? '×' + comboNow : '—';
+    hd.stat.combo.parentNode.classList.toggle('hot', comboNow > 1);
+    hd.stat.maxCombo.textContent = '×' + Math.min(5, s.stats.maxCombo || 0);
+    // 升級順序
+    var reached = s.stats.maxLevel || 0;
+    s.animals().forEach(function (b) { if (b.mz.kind === 'animal' && b.mz.level > reached) reached = b.mz.level; });
+    var heldNow = s.held();
+    var hl = heldNow.item ? 0 : heldNow.level;
+    var ckey = s.world.id + reached + '|' + hl;
+    if (force || hd.chainKey !== ckey) {
+      hd.chainKey = ckey;
+      hd.chain.innerHTML = '';
+      // 手上的動物與「兩隻一樣會合成的下一級」一起標出來
+      hd.chainHint.innerHTML = '';
+      if (hl) {
+        hd.chainHint.appendChild(document.createTextNode(t('hud.mergeHint', { a: charName(s.world.id, hl) })));
+        hd.chainHint.appendChild(h('b', { text: hl < 10 ? charName(s.world.id, hl + 1) : t('hud.mergeTop') }));
+      }
+      for (var lv = 1; lv <= 10; lv++) {
+        hd.chain.appendChild(h('span', { class: 'chain-cell' + (lv <= reached ? ' got' : '') + (lv === reached ? ' top' : '') + (lv === hl ? ' held' : '') + (hl && lv === hl + 1 ? ' result' : ''), role: 'listitem',
+          title: 'Lv.' + lv + ' ' + charName(s.world.id, lv), 'aria-label': 'Lv.' + lv + ' ' + charName(s.world.id, lv) + (lv <= reached ? ' ✓' : '') },
+          h('img', { src: Art.image(s.world.id, lv, 'normal').src, alt: '' })));
+      }
     }
     var nx = s.queue[s.armed ? 0 : 1];
     var key = s.world.id + nx.level + (nx.gold ? 'g' : '');

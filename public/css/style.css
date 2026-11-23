@@ -225,7 +225,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .rank-pic { width: 48px; }
 .rank-score { font-size: 18px; }
 .rank-date { color: var(--ink-2); font-weight: 700; }
-.empty { text-align: center; color: var(--ink-2); font-weight: 800; margin-top: 40px; }
+.empty-note { text-align: center; color: var(--ink-2); font-weight: 800; margin-top: 40px; }
 .howto { padding-left: 1.4em; line-height: 1.7; font-weight: 600; margin-top: 0; }
 .howto-items { display: grid; gap: 8px; }
 .howto-item { display: grid; grid-template-columns: 40px auto 1fr; gap: 8px; align-items: center; }
@@ -234,11 +234,12 @@ img { -webkit-user-drag: none; user-select: none; }
 
 /* ---------- 遊戲畫面 ---------- */
 .play { position: absolute; inset: 0; display: grid; grid-template-columns: clamp(150px, 17vw, 220px) minmax(0, 1fr); }
-.hud {
-  display: flex; flex-direction: column; gap: 10px; padding: 12px 10px calc(12px + var(--safe-b)) calc(12px + var(--safe-l));
-  background: rgba(255, 246, 230, 0.94); border-right: 2px solid var(--line); overflow-y: auto; scrollbar-width: none; z-index: 2;
+.hud { position: relative; min-height: 0; background: rgba(255, 246, 230, 0.94); border-right: 2px solid var(--line); z-index: 2; display: flex; flex-direction: column; }
+.hud-scroll { flex: 1 1 auto; min-height: 0; }
+.hud-inner {
+  display: flex; flex-direction: column; gap: 10px; min-height: 100%;
+  padding: 12px 14px calc(12px + var(--safe-b)) calc(12px + var(--safe-l));
 }
-.hud::-webkit-scrollbar { display: none; }
 .hud-title { display: none; }
 .hud-card { border: 2.5px solid var(--ink); border-radius: 16px; background: var(--paper-2); padding: 8px 10px; box-shadow: 0 3px 0 var(--ink); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .hud-label { font-size: 12px; font-weight: 800; color: var(--ink-2); letter-spacing: .04em; }
@@ -258,6 +259,24 @@ img { -webkit-user-drag: none; user-select: none; }
 .item-slot.empty { background: #F1E6D4; border-style: dashed; box-shadow: none; cursor: default; }
 .item-slot:not(.empty):active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
 .end-btn { margin-top: auto; }
+.hud-time { font-size: clamp(20px, 2.2vw, 26px); font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.hud-time.warn { color: var(--danger); animation: blink .5s ease-in-out infinite alternate; }
+.hud-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 8px; margin: 0; }
+.hud-stat { display: flex; flex-direction: column; min-width: 0; }
+.hud-stat dt { font-size: 11px; font-weight: 800; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-stat dd { margin: 0; font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.hud-stat.hot dd { color: var(--coral); }
+.hud-chain { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
+.chain-cell { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: 10px; }
+.chain-cell img { width: 100%; height: 100%; object-fit: contain; filter: grayscale(1) opacity(.3); }
+.chain-cell.got img { filter: none; }
+.chain-cell.top { background: #FFF0C2; }
+.chain-cell.held { box-shadow: inset 0 0 0 2.5px var(--sky); background: #E3F3FF; }
+.chain-cell.held img, .chain-cell.result img { filter: none; }
+.chain-cell.result { box-shadow: inset 0 0 0 2.5px var(--coral); }
+.chain-cell.result img { opacity: .85; }
+.chain-hint { font-size: 12px; font-weight: 800; color: var(--ink-2); line-height: 1.35; }
+.chain-hint b { color: var(--coral-d); }
 
 .stage { position: relative; min-width: 0; min-height: 0; overflow: hidden; touch-action: none; outline: none; cursor: crosshair; }
 .stage:focus-visible { box-shadow: inset 0 0 0 4px var(--sky); }
@@ -291,7 +310,9 @@ img { -webkit-user-drag: none; user-select: none; }
 /* 直向：資訊放上方 */
 @media (orientation: portrait), (max-aspect-ratio: 1/1) {
   .play { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
-  .hud { flex-direction: row; flex-wrap: wrap; align-items: stretch; gap: 8px; padding: 8px calc(10px + var(--safe-r)) 8px calc(10px + var(--safe-l)); border-right: 0; border-bottom: 2px solid var(--line); overflow: visible; }
+  .hud { border-right: 0; border-bottom: 2px solid var(--line); }
+  .hud-scroll .sa-view { height: auto; max-height: 46vh; }
+  .hud-inner { flex-direction: row; flex-wrap: wrap; align-items: stretch; gap: 8px; min-height: 0; padding: 8px calc(14px + var(--safe-r)) 8px calc(10px + var(--safe-l)); }
   .hud-title { display: none; }
   .hud-card { padding: 6px 8px; }
   .hud-scorecard { flex: 1 1 110px; }
@@ -302,6 +323,30 @@ img { -webkit-user-drag: none; user-select: none; }
   .item-slot { height: 46px; }
   .items { grid-template-columns: repeat(3, minmax(0, 52px)); }
   .end-btn { margin-top: 0; flex: 0 0 auto; min-height: 44px; align-self: center; }
+  .hud-timecard { flex: 0 0 auto; min-width: 76px; }
+  .hud-statcard { flex: 1 1 100%; order: 6; padding: 4px 8px; }
+  .hud-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .hud-stat dd { font-size: 15px; }
+  .hud-chaincard { flex: 1 1 100%; order: 7; flex-direction: row; align-items: center; gap: 8px; padding: 4px 8px; }
+  .hud-chain { flex: 1; grid-template-columns: repeat(10, minmax(0, 1fr)); max-width: 420px; }
+}
+/* 手機直向：資訊改成三欄格線，統計與升級順序各占一列 */
+@media (orientation: portrait) and (max-height: 900px) {
+  .hud-inner { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; }
+  .hud-scorecard { grid-column: 1; }
+  .hud-timecard { grid-column: 2; min-width: 64px; }
+  .hud-nextcard { grid-column: 3; }
+  .hud-goalcard { grid-column: 1 / -1; }
+  .hud-itemcard { grid-column: 1; }
+  .hud-statcard { grid-column: 2 / -1; padding: 4px 8px; }
+  .hud-chaincard { grid-column: 1 / -1; padding: 3px 8px; }
+  .hud-chaincard .hud-label { display: none; }
+  .hud-chain { grid-template-columns: repeat(10, minmax(0, 1fr)); max-width: none; }
+  .hud-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 8px; }
+  .hud-stat dt { font-size: 10px; }
+  .hud-stat dd { font-size: 14px; }
+  .hud-time { font-size: 20px; }
+  .end-btn { grid-column: 1 / -1; min-height: 40px; }
 }
 @media (orientation: portrait) and (max-width: 420px) {
   .hud-num { font-size: 22px; }
@@ -312,9 +357,24 @@ img { -webkit-user-drag: none; user-select: none; }
   :root { --topbar: 48px; }
   .btn-icon { width: 40px; min-width: 40px; height: 40px; min-height: 40px; }
   .pill-btn { min-height: 40px; }
-  .play { grid-template-columns: clamp(168px, 22vw, 200px) minmax(0, 1fr); }
+  .play { grid-template-columns: clamp(176px, 23vw, 210px) minmax(0, 1fr); }
   .items { gap: 4px; }
-  .hud { gap: 6px; padding-top: 6px; }
+  .hud-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; gap: 5px; }
+  .hud-scorecard, .hud-goalcard, .hud-itemcard, .hud-statcard, .hud-chaincard, .end-btn { grid-column: 1 / -1; }
+  .hud-num { font-size: 20px; }
+  .hud-time { font-size: 17px; }
+  .hud-nextcard { flex-direction: row; align-items: center; justify-content: space-between; }
+  .next-pic img { width: 34px; height: 34px; }
+  .item-slot { height: 42px; }
+  .item-slot img { width: 32px; height: 32px; }
+  .hud-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 6px; }
+  .hud-nextcard .hud-label { white-space: nowrap; }
+  .hud-stat dt { font-size: 10px; }
+  .hud-stat dd { font-size: 13px; }
+  .hud-chaincard .hud-label { display: none; }
+  .hud-chain { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .hud-card { box-shadow: 0 2px 0 var(--ink); border-width: 2px; border-radius: 12px; }
+  .hud-inner { gap: 6px; padding-top: 6px; }
   .hud-card { padding: 4px 8px; }
   .hud-title { font-size: 13px; }
   .next-pic img { width: 44px; height: 44px; }

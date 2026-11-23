@@ -256,6 +256,9 @@
 
   Renderer.prototype.drawBodies = function (g, s) {
     var self = this, wid = s.world.id, numbers = this.opts.numbers, rm = this.opts.reduceMotion;
+    var held = s.held();
+    // 同種提示跟著「落點預告線」設定（困難與神話不顯示）
+    this.matchLevel = s.state !== 'over' && !held.item && this.opts.guide && (s.mode === 'level' || s.diff.guide) ? held.level : 0;
     s.animals().forEach(function (b) {
       var m = b.mz, r = b.circleRadius;
       g.save();
@@ -273,6 +276,17 @@
         g.shadowColor = '#FFD23C'; g.shadowBlur = 18;
         g.fillStyle = 'rgba(255,215,60,0.55)';
         g.beginPath(); g.arc(0, 0, r * 1.12, 0, Math.PI * 2); g.fill();
+        g.restore();
+      }
+      if (self.matchLevel && m.kind === 'animal' && !m.ice && m.level === self.matchLevel) {
+        // 跟手上一樣的動物：放在牠旁邊碰到就會合成
+        var pulse = 0.55 + 0.45 * Math.sin(s.t * 5 + m.id);
+        g.save();
+        g.strokeStyle = 'rgba(255,255,255,' + (0.6 + 0.4 * pulse) + ')';
+        g.lineWidth = 4; g.setLineDash([7, 6]); g.lineDashOffset = -s.t * 20;
+        g.beginPath(); g.arc(0, 0, r * 1.12, 0, Math.PI * 2); g.stroke();
+        g.strokeStyle = 'rgba(95,184,240,' + (0.5 + 0.5 * pulse) + ')'; g.lineWidth = 2; g.setLineDash([]);
+        g.beginPath(); g.arc(0, 0, r * 1.2, 0, Math.PI * 2); g.stroke();
         g.restore();
       }
       g.rotate(b.angle);

@@ -227,7 +227,7 @@
       filters.appendChild(chips('diff', D.DIFFICULTIES.map(function (d) { return d.id; }), function (v) { return t('diff.' + v); }));
       var list = P.ranks(st.mode, st.world, st.diff);
       listHost.innerHTML = '';
-      if (!list.length) { listHost.appendChild(h('p', { class: 'empty', text: t('rank.empty') })); return; }
+      if (!list.length) { listHost.appendChild(h('p', { class: 'empty-note', text: t('rank.empty') })); return; }
       var ol = h('ol', { class: 'rank-list' });
       list.forEach(function (r, i) {
         var dt = new Date(r.at);
