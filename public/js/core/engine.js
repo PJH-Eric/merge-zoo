@@ -52,6 +52,8 @@
     this.score = 0;
     this.cooldown = 0;
     this.danger = 0;
+    this.dangerOn = false;
+    this.dangerIds = [];
     this.angle = 0;
     this.rotateInput = 0;
     this.chain = 0;
@@ -556,43 +558,65 @@
     });
   };
 
-  /** 紅線判定：箱子座標下，動物頂端停在紅線以上超過 2 秒才算輸 */
+  /**
+   * 紅線判定（箱子座標）：
+   * - 只算「已經落進箱子、而且幾乎靜止」的動物；還在飛、在彈、剛被戳或被炸飛的不算
+   * - 頂端要超過紅線 LINE_TOL 以上才算，擦邊不算
+   * - 超線計時累積到 2 秒才輸；離開紅線時計時以 2 倍速退回，避免一彈就歸零或一碰就重來
+   */
+  var LINE_TOL = 6, SETTLE_SPEED = 1.1, SETTLE_SPIN = 0.12, DANGER_SHOW = 0.3;
+  Session.prototype.lineTop = function (b) {
+    var lp = this.worldToLocal(b.position.x, b.position.y);
+    return lp.y - b.circleRadius;
+  };
   Session.prototype.overLine = function (b) {
     if (b.mz.kind !== 'animal') return false;
     if (this.t - b.mz.born < this.grace) return false;
-    var lp = this.worldToLocal(b.position.x, b.position.y);
-    return lp.y - b.circleRadius < this.lineY;
+    var top = this.lineTop(b);
+    // 曾經整隻掉到紅線下方，才算「落進箱子」
+    if (!b.mz.landed && top > this.lineY) b.mz.landed = true;
+    if (!b.mz.landed && !b.mz.stuck) {
+      // 一直卡在紅線上沒掉下去：靜止夠久也算
+      if (Math.hypot(b.velocity.x, b.velocity.y) < SETTLE_SPEED) b.mz.stuckT = (b.mz.stuckT || 0) + DT; else b.mz.stuckT = 0;
+      if (b.mz.stuckT > 0.6) b.mz.stuck = true; else return false;
+    }
+    if (top >= this.lineY - LINE_TOL) return false;
+    var speed = Math.hypot(b.velocity.x, b.velocity.y);
+    return speed < SETTLE_SPEED && Math.abs(b.angularVelocity) < SETTLE_SPIN * 4;
   };
   Session.prototype.nearLine = function (b) {
-    var lp = this.worldToLocal(b.position.x, b.position.y);
-    return lp.y - b.circleRadius < this.lineY + 50;
+    return this.lineTop(b) < this.lineY + 50;
   };
 
   Session.prototype.checkDanger = function () {
     var self = this;
     var over = this.animals().filter(function (b) { return self.overLine(b); });
-    var was = this.danger > 0;
-    if (over.length) this.danger += DT; else this.danger = 0;
-    if (!was && this.danger > 0) this.emit({ type: 'danger', on: true });
-    if (was && this.danger === 0) this.emit({ type: 'danger', on: false });
+    this.dangerIds = over.map(function (b) { return b.id; });
+    var was = this.dangerOn;
+    if (over.length) this.danger += DT; else this.danger = Math.max(0, this.danger - DT * 2);
+    // 有遲滯：累積 0.3 秒才亮警告，完全退回 0 才熄
+    if (!was && this.danger >= DANGER_SHOW) { this.dangerOn = true; this.emit({ type: 'danger', on: true }); }
+    if (was && this.danger === 0) { this.dangerOn = false; this.emit({ type: 'danger', on: false }); }
     if (this.danger >= DANGER_LIMIT) {
       if (!this.canLose) {
         // 幼幼班：上層動物變泡泡飛走，遊戲繼續
         this.animals().forEach(function (b) {
           if (b.mz.kind !== 'animal') return;
-          var lp = self.worldToLocal(b.position.x, b.position.y);
-          if (lp.y - b.circleRadius < self.lineY + 110) {
+          if (self.lineTop(b) < self.lineY + 110) {
             self.emit({ type: 'bubble', x: b.position.x, y: b.position.y, level: b.mz.level });
             self.remove(b);
           }
         });
-        this.danger = 0;
+        this.danger = 0; this.dangerIds = [];
+        this.dangerOn = false;
         this.emit({ type: 'danger', on: false });
       } else {
         this.finish('lose', 'line');
       }
     }
   };
+  /** 0~1：紅線倒數進度（給畫面用） */
+  Session.prototype.dangerRatio = function () { return Math.min(1, this.danger / DANGER_LIMIT); };
 
   /* ---------- 任務 ---------- */
   Session.prototype.goalProgress = function () {

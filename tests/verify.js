@@ -3,6 +3,7 @@
 const assert = require('assert');
 const D = require('../public/js/core/data.js');
 const E = require('../public/js/core/engine.js');
+const M = require('../public/js/vendor/matter.min.js');
 const R = require('../public/js/core/rng.js');
 const Daily = require('../public/js/core/daily.js');
 const Bot = require('../scripts/lib/bot.js');
@@ -78,18 +79,57 @@ test('放下冷卻 0.5 秒', () => {
 });
 test('紅線：停在紅線上超過 2 秒才算輸', () => {
   const s = session();
-  const b = s.makeBody('animal', 5, 0, 20); b.mz.born = -10;
-  require('../public/js/vendor/matter.min.js').Body.setStatic(b, true);
+  const b = s.makeBody('animal', 5, 0, 20); b.mz.born = -10; b.mz.landed = true;
+  M.Body.setStatic(b, true);
   steps(s, 60);
   assert.strictEqual(s.state, 'playing');
-  assert.ok(s.danger > 0.9);
+  assert.ok(s.danger > 0.9 && s.dangerOn);
+  assert.deepStrictEqual(s.dangerIds, [b.id]);
   steps(s, 70);
   assert.strictEqual(s.state, 'over');
   assert.strictEqual(s.result, 'lose');
 });
+test('紅線：還在飛或彈的動物不算超線', () => {
+  const s = session();
+  const b = s.makeBody('animal', 5, 0, 20); b.mz.born = -10; b.mz.landed = true;
+  M.Body.setStatic(b, true);
+  M.Body.setVelocity(b, { x: 0, y: -6 });
+  for (let i = 0; i < 150; i++) { M.Body.setVelocity(b, { x: 0, y: -6 }); s.step(); }
+  assert.strictEqual(s.state, 'playing');
+  assert.strictEqual(s.danger, 0);
+});
+test('紅線：只擦到邊（容差內）不算', () => {
+  const s = session();
+  const r = D.RADII[5];
+  const b = s.makeBody('animal', 5, 0, s.lineY + r - 3); b.mz.born = -10; b.mz.landed = true;
+  M.Body.setStatic(b, true);
+  steps(s, 150);
+  assert.strictEqual(s.state, 'playing');
+  assert.strictEqual(s.danger, 0);
+});
+test('紅線：短暫離開不會立刻歸零，而是倒退', () => {
+  const s = session();
+  const b = s.makeBody('animal', 5, 0, 20); b.mz.born = -10; b.mz.landed = true;
+  M.Body.setStatic(b, true);
+  steps(s, 60);
+  const before = s.danger;
+  M.Body.setPosition(b, { x: 0, y: 300 });
+  steps(s, 6);
+  assert.ok(s.danger > 0 && s.danger < before);
+  steps(s, 60);
+  assert.strictEqual(s.danger, 0);
+  assert.ok(!s.dangerOn);
+});
+test('紅線：一放下就卡在紅線上沒掉下去，靜止後也會計時', () => {
+  const s = session();
+  const b = s.makeBody('animal', 5, 0, 20); b.mz.born = -10;
+  M.Body.setStatic(b, true);
+  steps(s, 200);
+  assert.strictEqual(s.state, 'over');
+});
 test('幼幼班不會輸：上層動物變泡泡飛走', () => {
   const s = session({ difficulty: 'kids' });
-  const b = s.makeBody('animal', 5, 0, 20); b.mz.born = -10;
+  const b = s.makeBody('animal', 5, 0, 20); b.mz.born = -10; b.mz.landed = true;
   require('../public/js/vendor/matter.min.js').Body.setStatic(b, true);
   let bubble = 0; s.on(e => { if (e.type === 'bubble') bubble++; });
   steps(s, 130);

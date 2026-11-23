@@ -264,8 +264,8 @@
     g.fillStyle = st.inner;
     g.fillRect(-W / 2, 0, W, H);
     // 紅線
-    var dangerOn = s.danger > 0;
-    var pulse = dangerOn ? 0.55 + 0.45 * Math.sin(s.t * 18) : 1;
+    var dangerOn = !!s.dangerOn;
+    var pulse = dangerOn ? 0.55 + 0.45 * Math.sin(s.t * (10 + 14 * s.dangerRatio())) : 1;
     g.strokeStyle = dangerOn ? 'rgba(255,60,80,' + pulse + ')' : 'rgba(232,72,92,0.75)';
     g.lineWidth = dangerOn ? 5 : 3;
     g.setLineDash([14, 10]);
@@ -274,6 +274,9 @@
     if (dangerOn) {
       g.fillStyle = 'rgba(255,60,80,' + (0.08 + 0.08 * pulse) + ')';
       g.fillRect(-W / 2, 0, W, s.lineY);
+      // 倒數條：沿紅線由左往右填滿，滿了就結束
+      g.fillStyle = 'rgba(255,40,64,0.9)';
+      g.fillRect(-W / 2, s.lineY - 3, W * s.dangerRatio(), 6);
     }
     // 框
     var top = -34;
@@ -314,7 +317,7 @@
 
   Renderer.prototype.exprFor = function (b, s) {
     if (s.contacts[b.id] >= 5 || (s.t - b.mz.hit < 0.18)) return 'squish';
-    if (s.danger > 0 || (s.t - b.mz.born > s.grace && s.nearLine(b) && s.state === 'playing')) return s.nearLine(b) ? 'nervous' : 'normal';
+    if (s.dangerOn || (s.t - b.mz.born > s.grace && s.nearLine(b) && s.state === 'playing')) return s.nearLine(b) ? 'nervous' : 'normal';
     return 'normal';
   };
 
@@ -340,6 +343,14 @@
         g.shadowColor = '#FFD23C'; g.shadowBlur = 18;
         g.fillStyle = 'rgba(255,215,60,0.55)';
         g.beginPath(); g.arc(0, 0, r * 1.12, 0, Math.PI * 2); g.fill();
+        g.restore();
+      }
+      if (s.dangerOn && s.dangerIds && s.dangerIds.indexOf(b.id) >= 0) {
+        // 超過紅線的那隻：紅色外框閃爍，一眼看出是誰
+        g.save();
+        g.strokeStyle = 'rgba(255,50,72,' + (0.55 + 0.45 * Math.sin(s.t * 16)) + ')';
+        g.lineWidth = 5;
+        g.beginPath(); g.arc(0, 0, r + 5, 0, Math.PI * 2); g.stroke();
         g.restore();
       }
       if (self.matchLevel && m.kind === 'animal' && !m.ice && m.level === self.matchLevel) {
