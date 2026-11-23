@@ -235,8 +235,10 @@ img { -webkit-user-drag: none; user-select: none; }
 .howto-item span { color: var(--ink-2); font-weight: 600; }
 
 /* ---------- 遊戲畫面 ---------- */
-.play { position: absolute; inset: 0; display: grid; grid-template-columns: clamp(150px, 17vw, 220px) minmax(0, 1fr); }
-.hud { position: relative; min-height: 0; background: rgba(255, 246, 230, 0.94); border-right: 2px solid var(--line); z-index: 2; display: flex; flex-direction: column; }
+.play { position: absolute; inset: 0; display: grid;
+  --stage-h: calc(100dvh - var(--topbar) - var(--safe-t));
+  grid-template-columns: clamp(170px, calc(100vw - var(--stage-h) * 0.92), 440px) minmax(0, 1fr); }
+.hud { container-type: inline-size; position: relative; min-height: 0; background: rgba(255, 246, 230, 0.94); border-right: 2px solid var(--line); z-index: 2; display: flex; flex-direction: column; }
 .hud-scroll { flex: 1 1 auto; min-height: 0; }
 .hud-inner {
   display: flex; flex-direction: column; gap: 10px; min-height: 100%;
@@ -369,10 +371,10 @@ img { -webkit-user-drag: none; user-select: none; }
   :root { --topbar: 48px; }
   .btn-icon { width: 40px; min-width: 40px; height: 40px; min-height: 40px; }
   .pill-btn { min-height: 40px; }
-  .play { grid-template-columns: clamp(176px, 23vw, 210px) minmax(0, 1fr); }
+  .play { grid-template-columns: clamp(176px, calc(100vw - var(--stage-h) * 0.92), 440px) minmax(0, 1fr); }
   .items { gap: 4px; }
   .hud-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; gap: 5px; }
-  .hud-scorecard, .hud-goalcard, .hud-itemcard, .hud-statcard, .hud-chaincard, .end-btn { grid-column: 1 / -1; }
+  .hud-goalcard, .end-btn { grid-column: 1 / -1; }
   .hud-num { font-size: 20px; }
   .hud-time { font-size: 17px; }
   .hud-nextcard { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; }
@@ -481,3 +483,19 @@ img { -webkit-user-drag: none; user-select: none; }
 .toast { padding: 8px 14px; font-size: 15px; border-radius: 16px; background: var(--ink); color: var(--paper); font-weight: 800; box-shadow: 0 4px 0 rgba(0, 0, 0, .2); transition: opacity .4s, transform .4s; text-align: center; }
 .toast.achv { background: var(--sun); color: var(--ink); border: 2.5px solid var(--ink); }
 .toast.out { opacity: 0; transform: translateY(-8px); }
+
+/* 橫向且資訊欄夠寬：卡片排成兩欄，不用捲動 */
+@media (orientation: landscape) and (min-aspect-ratio: 1/1) {
+  @container (min-width: 280px) {
+    .hud-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; gap: 10px; }
+    .hud-goalcard, .end-btn { grid-column: 1 / -1; }
+    .hud-nextcard { justify-content: space-between; }
+    .hud-chain { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .end-btn { margin-top: 0; }
+  }
+  @container (min-width: 400px) {
+    .hud-num { font-size: clamp(22px, 4.2vh, 34px); }
+    .hud-time { font-size: clamp(18px, 3.6vh, 30px); }
+    .next-pic img { width: clamp(36px, 9vh, 76px); height: clamp(36px, 9vh, 76px); }
+  }
+}
