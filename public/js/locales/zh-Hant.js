@@ -67,6 +67,7 @@ I18N.add('zh-Hant', {
   'codex.title': '動物圖鑑', 'codex.progress': '已收集 {n} / {m}', 'codex.locked': '還沒合出來',
   'achv.title': '成就', 'achv.progress': '已達成 {n} / {m}', 'achv.toast': '達成成就：{name}',
   'rank.title': '排行', 'rank.classic': '經典', 'rank.daily': '每日', 'rank.empty': '還沒有紀錄，快去玩一局！',
+  'rank.filter.mode': '模式', 'rank.filter.world': '世界', 'rank.filter.diff': '難度',
   'rank.score': '{n} 分',
 
   'settings.title': '設定', 'settings.bgm': '背景音樂', 'settings.sfx': '音效', 'settings.vibrate': '震動',

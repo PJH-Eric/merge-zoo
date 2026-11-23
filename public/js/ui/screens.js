@@ -222,18 +222,23 @@
     var filters = h('div', { class: 'rank-filters' });
     var listHost = h('div', { class: 'rank-host' });
     function chips(key, values, labeler) {
-      var row = h('div', { class: 'chip-row', role: 'radiogroup' });
+      var row = h('div', { class: 'chip-row', role: 'radiogroup', 'aria-label': t('rank.filter.' + key) });
       values.forEach(function (v) {
         row.appendChild(h('button', { type: 'button', class: 'chip', role: 'radio', 'aria-checked': String(st[key] === v), text: labeler(v),
           onclick: function () { st[key] = v; root.Store.set('rankFilter', st); draw(); } }));
       });
       return row;
     }
+    function filterGroup(key, values, labeler) {
+      return h('div', { class: 'rank-filter-group rank-filter-' + key },
+        h('span', { class: 'rank-filter-label', text: t('rank.filter.' + key) }),
+        chips(key, values, labeler));
+    }
     function draw() {
       filters.innerHTML = '';
-      filters.appendChild(chips('mode', ['classic', 'daily'], function (v) { return t('rank.' + v); }));
-      filters.appendChild(chips('world', WORLD_IDS, function (v) { return t('world.' + v); }));
-      filters.appendChild(chips('diff', D.DIFFICULTIES.map(function (d) { return d.id; }), function (v) { return t('diff.' + v); }));
+      filters.appendChild(filterGroup('mode', ['classic', 'daily'], function (v) { return t('rank.' + v); }));
+      filters.appendChild(filterGroup('world', WORLD_IDS, function (v) { return t('world.' + v); }));
+      filters.appendChild(filterGroup('diff', D.DIFFICULTIES.map(function (d) { return d.id; }), function (v) { return t('diff.' + v); }));
       var list = P.ranks(st.mode, st.world, st.diff);
       listHost.innerHTML = '';
       if (!list.length) { listHost.appendChild(h('p', { class: 'empty-note', text: t('rank.empty') })); return; }

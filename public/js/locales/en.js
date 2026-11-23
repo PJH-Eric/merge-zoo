@@ -67,6 +67,7 @@ I18N.add('en', {
   'codex.title': 'Animal album', 'codex.progress': 'Collected {n} / {m}', 'codex.locked': 'Not merged yet',
   'achv.title': 'Badges', 'achv.progress': 'Earned {n} / {m}', 'achv.toast': 'Badge earned: {name}',
   'rank.title': 'Records', 'rank.classic': 'Classic', 'rank.daily': 'Daily', 'rank.empty': 'No records yet. Go play a round!',
+  'rank.filter.mode': 'Mode', 'rank.filter.world': 'World', 'rank.filter.diff': 'Difficulty',
   'rank.score': '{n} pts',
 
   'settings.title': 'Settings', 'settings.bgm': 'Music', 'settings.sfx': 'Sound effects', 'settings.vibrate': 'Vibration',

@@ -67,6 +67,7 @@ I18N.add('zh-Hans', {
   'codex.title': '动物图鉴', 'codex.progress': '已收集 {n} / {m}', 'codex.locked': '还没合出来',
   'achv.title': '成就', 'achv.progress': '已达成 {n} / {m}', 'achv.toast': '达成成就：{name}',
   'rank.title': '排行', 'rank.classic': '经典', 'rank.daily': '每日', 'rank.empty': '还没有纪录，快去玩一局！',
+  'rank.filter.mode': '模式', 'rank.filter.world': '世界', 'rank.filter.diff': '难度',
   'rank.score': '{n} 分',
 
   'settings.title': '设定', 'settings.bgm': '背景音乐', 'settings.sfx': '音效', 'settings.vibrate': '震动',
